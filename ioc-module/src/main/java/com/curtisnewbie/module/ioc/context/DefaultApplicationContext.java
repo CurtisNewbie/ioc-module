@@ -2,9 +2,9 @@ package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.annotations.AnnotatedBeanResolver;
 import com.curtisnewbie.module.ioc.annotations.AnnotatedBeanResolverImpl;
-import com.curtisnewbie.module.ioc.annotations.Injectable;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -34,6 +34,13 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     @Override
     protected void initializeContext() {
-        Set<Class<?>> classes = beanResolver.resolveClazzWithAnnotation(Injectable.class, getClassLoader());
+        // set of classes of beans that will be managed by this context
+        Set<Class<?>> managedBeanClasses = beanResolver.resolveBeanClasses(getClassLoader());
+        Map<Class<?>, Set<Class<?>>> dependenciesMap = new HashMap<>();
+
+        // load dependencies of each class
+        for (Class<?> beanClazz : managedBeanClasses) {
+            dependenciesMap.put(beanClazz, beanResolver.resolveDependenciesOfClass(beanClazz));
+        }
     }
 }

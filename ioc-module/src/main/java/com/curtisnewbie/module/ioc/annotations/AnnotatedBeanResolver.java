@@ -1,6 +1,5 @@
 package com.curtisnewbie.module.ioc.annotations;
 
-import java.lang.annotation.Annotation;
 import java.util.Set;
 
 /**
@@ -8,17 +7,23 @@ import java.util.Set;
  *
  * @author yongjie.zhuang
  * @see Dependency
- * @see Injectable
+ * @see MBean
  */
 public interface AnnotatedBeanResolver {
 
     /**
-     * Resolve classes with the annotation
+     * Resolve beans' classes
      *
-     * @param annotation     annotation
      * @param clzLoaderToUse the classLoader to use
-     * @param <T>            type of annotation
      * @return set of classes
      */
-    <T extends Annotation> Set<Class<?>> resolveClazzWithAnnotation(Class<T> annotation, ClassLoader clzLoaderToUse);
+    Set<Class<?>> resolveBeanClasses(ClassLoader clzLoaderToUse);
+
+    /**
+     * Resolve dependencies of the class
+     *
+     * @param clazz class
+     * @return Set of accessible and injectable dependencies of the given class
+     */
+    Set<Class<?>> resolveDependenciesOfClass(Class<?> clazz);
 }
