@@ -1,13 +1,10 @@
 package com.curtisnewbie;
 
-/**
- * Hello world!
- *
- */
-public class App 
-{
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello World!" );
+import com.curtisnewbie.module.ioc.context.ContextFactory;
+
+public class App {
+
+    public static void main(String[] args) {
+        ContextFactory.getContextInitializer().initialize(App.class);
     }
 }
