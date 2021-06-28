@@ -20,8 +20,7 @@ public final class BeanNameUtil {
      * @return bean name
      */
     public static String toBeanName(Class<?> clazz) {
-        if (clazz == null)
-            return null;
-        return Introspector.decapitalize(clazz.getName());
+        Objects.requireNonNull(clazz);
+        return clazz.getCanonicalName();
     }
 }

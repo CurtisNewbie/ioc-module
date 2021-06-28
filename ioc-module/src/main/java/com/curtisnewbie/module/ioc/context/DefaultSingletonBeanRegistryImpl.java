@@ -2,17 +2,14 @@ package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.exceptions.SingletonBeanRegistered;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.curtisnewbie.module.ioc.util.BeanNameUtil.toBeanName;
+
+// TODO: this implementation is not working for beans that implement and act as different interfaces
 
 /**
  * Implementation of {@link SingletonBeanRegistry}
@@ -29,6 +26,9 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
     private final Map<String, Object> beanInstanceMap = new ConcurrentHashMap<>();
     /** Dependencies map; bean name to its dependencies */
     private final Map<String, Set<String>> dependenciesMap = new ConcurrentHashMap<>();
+    /** Set of bean's name; where in the bean is resolved already, including its dependencies */
+    private final Set<String> beanResolved = Collections.newSetFromMap(new ConcurrentHashMap<>());
+
     /** mutex lock */
     private final Object mutex = new Object();
 
@@ -37,23 +37,14 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
     /** Resolver of beans' dependencies */
     private final BeanDependencyResolver dependencyResolver;
 
-    private final ClassLoader classLoader;
+    private ClassLoader classLoader = this.getClass().getClassLoader();
+
     /** Indicate whether this registry is initialized */
     private boolean isInitialise = false;
 
-    public DefaultSingletonBeanRegistryImpl(ClassLoader classLoader) {
+    public DefaultSingletonBeanRegistryImpl() {
         this.beanClzScanner = new AnnotatedBeanClassScanner();
         this.dependencyResolver = new AnnotatedBeanDependencyResolver();
-
-        if (classLoader != null) {
-            this.classLoader = classLoader;
-        } else {
-            this.classLoader = this.getClass().getClassLoader();
-        }
-    }
-
-    public DefaultSingletonBeanRegistryImpl() {
-        this(null);
     }
 
     @Override
@@ -163,6 +154,10 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
     }
 
     private void resolveBeanRecursive(String beanName) {
+        // bean has been resolved
+        if (beanResolved.contains(beanName))
+            return;
+
         Class<?> beanClz = beanTypeMap.get(beanName);
         Objects.requireNonNull(beanClz, "Unable to find class of bean: " + beanName);
 
@@ -183,14 +178,14 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
         }
 
         // start to inject the dependencies between beans
-        // 1.instantiate a bean
+        // instantiate the bean
         Object bean = instantiateBean(beanName);
         beanInstanceMap.put(beanName, bean);
-
-        // 2.setup it's dependencies
+        // inject dependencies
         for (Map.Entry<String, List<PropertyInfo>> dependent : dependencies.entrySet()) {
             injectDependencies(bean, beanName, dependent.getKey(), dependent.getValue());
         }
+        beanResolved.add(beanName);
     }
 
     /** Instantiate bean with default constructor */
@@ -231,6 +226,13 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
                     throw new IllegalStateException("Unable to inject dependency in bean: " + beanName + ", field: " + prop.getPropertyName());
                 }
             }
+        }
+    }
+
+    @Override
+    public void setClassLoader(ClassLoader classLoader) {
+        synchronized (mutex) {
+            this.classLoader = classLoader;
         }
     }
 }

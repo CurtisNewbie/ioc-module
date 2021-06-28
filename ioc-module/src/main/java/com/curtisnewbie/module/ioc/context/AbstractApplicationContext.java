@@ -15,6 +15,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
      *
      * @param mainClazz the class that contains the main(...) method
      */
+    @Override
     public void initialize(Class<?> mainClazz) {
         // validate if the application context has been initialised
         if (AbstractApplicationContext.mainClazz != null) {

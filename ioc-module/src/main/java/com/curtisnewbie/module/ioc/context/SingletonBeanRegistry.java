@@ -7,7 +7,7 @@ import com.curtisnewbie.module.ioc.exceptions.SingletonBeanRegistered;
  *
  * @author yongjie.zhuang
  */
-public interface SingletonBeanRegistry extends BeanRegistry {
+public interface SingletonBeanRegistry extends BeanRegistry, ClassLoaderAware {
 
     /**
      * Register a singleton bean with the name

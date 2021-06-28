@@ -11,11 +11,12 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
     private final SingletonBeanRegistry singletonBeanRegistry;
 
     public DefaultApplicationContext() {
-        this.singletonBeanRegistry = new DefaultSingletonBeanRegistryImpl(getClassLoader());
+        this.singletonBeanRegistry = new DefaultSingletonBeanRegistryImpl();
     }
 
     @Override
     protected void initializeContext() {
+        this.singletonBeanRegistry.setClassLoader(getClassLoader());
         this.singletonBeanRegistry.loadBeanRegistry();
     }
 
