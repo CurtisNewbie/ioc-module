@@ -1,6 +1,7 @@
 package com.curtisnewbie.module.ioc.context;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Resolver of beans' dependencies
@@ -13,15 +14,8 @@ public interface BeanDependencyResolver {
      * Resolve dependencies of the class
      *
      * @param clazz class
-     * @return Set of accessible and injectable dependencies of the given class
+     * @return Map of accessible and injectable dependencies of the given class, where the key is the dependent bean
+     * name, and value is list of PropertyInfo which is of the same dependent type
      */
-    Set<Class<?>> resolveDependenciesOfClass(Class<?> clazz);
-
-    /**
-     * Resolve dependencies of the class
-     *
-     * @param clazz class
-     * @return Set of accessible and injectable dependencies of the given class
-     */
-    Set<String> resolveDependenciesNamesOfClass(Class<?> clazz);
+    Map<String, List<PropertyInfo>> resolveDependenciesOfClass(Class<?> clazz);
 }

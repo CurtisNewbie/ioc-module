@@ -37,4 +37,10 @@ public interface SingletonBeanRegistry extends BeanRegistry {
      * @param dependentBeanName the bean that might be dependent on
      */
     boolean isDependent(String beanName, String dependentBeanName);
+
+
+    /**
+     * Load the bean registry, this method is expected to be ran in a single thread
+     */
+    void loadBeanRegistry();
 }

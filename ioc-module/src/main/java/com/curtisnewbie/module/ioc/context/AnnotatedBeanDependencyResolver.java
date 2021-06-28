@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 public class AnnotatedBeanDependencyResolver implements BeanDependencyResolver {
 
     @Override
-    public Set<Class<?>> resolveDependenciesOfClass(Class<?> clz) {
+    public Map<String, List<PropertyInfo>> resolveDependenciesOfClass(Class<?> clz) {
         Objects.requireNonNull(clz, "class is null, unable to resolve dependencies");
-        Set<Class<?>> dependentClasses = new HashSet<>();
+        Map<String, List<PropertyInfo>> dependencies = new HashMap<>();
         Map<String, PropertyDescriptor> pdMap;
         try {
             BeanInfo beanInfo = Introspector.getBeanInfo(clz);
@@ -47,19 +47,14 @@ public class AnnotatedBeanDependencyResolver implements BeanDependencyResolver {
                         throw new IllegalStateException("Collections are not supported for dependency injection, " +
                                 "field: " + f.getName());
                     }
-                    dependentClasses.add(propType);
+                    String dependentBeanName = BeanNameUtil.toBeanName(propType);
+                    // key: dependent's type, value: list of propertyInfo of this dependency type
+                    dependencies.computeIfAbsent(dependentBeanName, k -> new ArrayList<>());
+                    dependencies.get(dependentBeanName).add(new PropertyInfo(f.getName(), pd, propType));
                 }
             }
         }
-        return dependentClasses;
-    }
-
-    @Override
-    public Set<String> resolveDependenciesNamesOfClass(Class<?> clazz) {
-        return resolveDependenciesOfClass(clazz)
-                .stream()
-                .map(c -> BeanNameUtil.toBeanName(c))
-                .collect(Collectors.toSet());
+        return dependencies;
     }
 
     /**
