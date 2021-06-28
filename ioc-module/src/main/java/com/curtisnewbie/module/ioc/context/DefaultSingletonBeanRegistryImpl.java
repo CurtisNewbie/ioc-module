@@ -36,8 +36,10 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
     private final BeanClassScanner beanClzScanner;
     /** Resolver of beans' dependencies */
     private final BeanDependencyResolver dependencyResolver;
+    /** List of BeanPostProcessors that process the bean after instantiation */
+    private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
 
-    private ClassLoader classLoader = this.getClass().getClassLoader();
+    private volatile ClassLoader classLoader = this.getClass().getClassLoader();
 
     /** Indicate whether this registry is initialized */
     private boolean isInitialise = false;
@@ -48,10 +50,10 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
     }
 
     @Override
-    public void registerSingletonBean(String beanName, Object bean) throws SingletonBeanRegistered {
-        synchronized (mutex) {
+    public void registerSingletonBean(String beanName, Object bean) {
+        synchronized (getMutex()) {
             if (beanInstanceMap.get(beanName) != null) {
-                throw new SingletonBeanRegistered(beanName + " has been registered");
+                throw new IllegalStateException(beanName + " has been registered");
             }
             beanInstanceMap.put(beanName, bean);
             beanNameSet.add(beanName);
@@ -59,7 +61,7 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
     }
 
     @Override
-    public void registerSingletonBean(Class<?> clazz, Object bean) throws SingletonBeanRegistered {
+    public void registerSingletonBean(Class<?> clazz, Object bean) {
         String beanName = toBeanName(clazz);
         registerSingletonBean(beanName, bean);
     }
@@ -129,27 +131,44 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
 
     @Override
     public void loadBeanRegistry() {
-        // can only be initialised once
-        synchronized (mutex) {
+
+        synchronized (getMutex()) {
+
+            // can only be initialised once
             if (isInitialise)
                 throw new IllegalStateException("Bean registry cannot be initialized multiple times");
             isInitialise = true;
-        }
-        // set of classes of beans that will be managed by this context
-        Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses(classLoader);
 
-        for (Class<?> c : managedBeanClasses) {
-            if (c.isInterface()) {
-                throw new IllegalStateException("Interface cannot be injected, type: " + c.toString());
+            Objects.requireNonNull(classLoader);
+
+            // set of classes of beans that will be managed by this context
+            Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses(classLoader);
+            for (Class<?> c : managedBeanClasses) {
+                if (c.isInterface()) {
+                    throw new IllegalStateException("Interface cannot be injected, type: " + c.toString());
+                }
+                String beanName = toBeanName(c);
+                beanTypeMap.put(beanName, c);
+                beanNameSet.add(beanName);
             }
-            String beanName = toBeanName(c);
-            beanTypeMap.put(beanName, c);
-            beanNameSet.add(beanName);
-        }
 
-        // load dependencies of each bean recursively
-        for (String beanName : beanNameSet) {
-            resolveBeanRecursive(beanName);
+            // load dependencies of each bean recursively
+            for (String beanName : beanNameSet) {
+                resolveBeanRecursive(beanName);
+            }
+
+            for (BeanPostProcessor p : this.beanPostProcessors) {
+                for (Map.Entry<String, Object> bean : this.beanInstanceMap.entrySet()) {
+                    p.postProcessBean(bean.getValue(), bean.getKey());
+                }
+            }
+        }
+    }
+
+    @Override
+    public void registerBeanPostProcessor(List<BeanPostProcessor> beanPostProcessorList) {
+        synchronized (getMutex()) {
+            this.beanPostProcessors.addAll(beanPostProcessorList);
         }
     }
 
@@ -180,7 +199,7 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
         // start to inject the dependencies between beans
         // instantiate the bean
         Object bean = instantiateBean(beanName);
-        beanInstanceMap.put(beanName, bean);
+        registerSingletonBean(beanName, bean);
         // inject dependencies
         for (Map.Entry<String, List<PropertyInfo>> dependent : dependencies.entrySet()) {
             injectDependencies(bean, beanName, dependent.getKey(), dependent.getValue());
@@ -231,8 +250,12 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
 
     @Override
     public void setClassLoader(ClassLoader classLoader) {
-        synchronized (mutex) {
+        synchronized (getMutex()) {
             this.classLoader = classLoader;
         }
+    }
+
+    private Object getMutex() {
+        return this.mutex;
     }
 }

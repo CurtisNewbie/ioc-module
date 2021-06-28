@@ -2,6 +2,8 @@ package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.exceptions.SingletonBeanRegistered;
 
+import java.util.List;
+
 /**
  * Registry of singleton beans
  *
@@ -15,7 +17,7 @@ public interface SingletonBeanRegistry extends BeanRegistry, ClassLoaderAware {
      * @param beanName name of the bean
      * @param bean     the instance/bean
      */
-    void registerSingletonBean(String beanName, Object bean) throws SingletonBeanRegistered;
+    void registerSingletonBean(String beanName, Object bean);
 
     /**
      * Register a singleton bean with the class
@@ -23,7 +25,7 @@ public interface SingletonBeanRegistry extends BeanRegistry, ClassLoaderAware {
      * @param clazz class of the bean
      * @param bean  the instance/bean
      */
-    void registerSingletonBean(Class<?> clazz, Object bean) throws SingletonBeanRegistered;
+    void registerSingletonBean(Class<?> clazz, Object bean);
 
     /**
      * Register a dependency of this bean
@@ -43,4 +45,9 @@ public interface SingletonBeanRegistry extends BeanRegistry, ClassLoaderAware {
      * Load the bean registry, this method is expected to be ran in a single thread
      */
     void loadBeanRegistry();
+
+    /**
+     * Register a list of {@link BeanPostProcessor}
+     */
+    void registerBeanPostProcessor(List<BeanPostProcessor> beanPostProcessorList);
 }
