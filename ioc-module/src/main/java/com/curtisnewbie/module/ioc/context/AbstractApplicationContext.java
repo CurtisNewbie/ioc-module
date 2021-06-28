@@ -1,13 +1,12 @@
 package com.curtisnewbie.module.ioc.context;
 
-import java.util.Map;
 
 /**
  * Abstract application context
  *
  * @author yongjie.zhuang
  */
-public abstract class AbstractApplicationContext implements ContextAware, ContextInitializer {
+public abstract class AbstractApplicationContext implements ApplicationContext, ContextInitializer {
 
     private static volatile Class<?> mainClazz;
 
@@ -32,14 +31,14 @@ public abstract class AbstractApplicationContext implements ContextAware, Contex
      *
      * @see #initialize(Class)
      */
-    protected Class<?> getMainClazz() {
+    public Class<?> getMainClazz() {
         return AbstractApplicationContext.mainClazz;
     }
 
     /**
      * Get the classLoader of the main class
      */
-    protected ClassLoader getClassLoader() {
+    public ClassLoader getClassLoader() {
         return getMainClazz().getClassLoader();
     }
 

@@ -1,7 +1,7 @@
-package com.curtisnewbie.module.ioc.annotations;
+package com.curtisnewbie.module.ioc.context;
 
-
-import org.reflections.Reflections;
+import com.curtisnewbie.module.ioc.annotations.Dependency;
+import com.curtisnewbie.module.ioc.util.BeanNameUtil;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -9,19 +9,14 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * Implementation of {@link AnnotatedBeanResolver}
+ * Resolver of annotated beans' dependencies
  *
  * @author yongjie.zhuang
  */
-public class AnnotatedBeanResolverImpl implements AnnotatedBeanResolver {
-
-    @Override
-    public Set<Class<?>> resolveBeanClasses(ClassLoader clzLoaderToUse) {
-        Reflections r = new Reflections(clzLoaderToUse);
-        return r.getTypesAnnotatedWith(MBean.class);
-    }
+public class AnnotatedBeanDependencyResolver implements BeanDependencyResolver {
 
     @Override
     public Set<Class<?>> resolveDependenciesOfClass(Class<?> clz) {
@@ -36,7 +31,7 @@ public class AnnotatedBeanResolverImpl implements AnnotatedBeanResolver {
             throw new IllegalStateException("Unable to introspect " + clz, e);
         }
 
-        Field[] fields = clz.getFields();
+        Field[] fields = clz.getDeclaredFields();
         for (Field f : fields) {
             // the field has a @Dependency annotation & it contains a writer method
             if (f.isAnnotationPresent(Dependency.class)) {
@@ -57,6 +52,14 @@ public class AnnotatedBeanResolverImpl implements AnnotatedBeanResolver {
             }
         }
         return dependentClasses;
+    }
+
+    @Override
+    public Set<String> resolveDependenciesNamesOfClass(Class<?> clazz) {
+        return resolveDependenciesOfClass(clazz)
+                .stream()
+                .map(c -> BeanNameUtil.toBeanName(c))
+                .collect(Collectors.toSet());
     }
 
     /**
