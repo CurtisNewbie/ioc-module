@@ -15,6 +15,12 @@ public class SomebodyBean {
     @Dependency
     private TommyBean tommyBean;
 
+//    @Dependency
+//    private int notInjectableInt;
+
+//    @Dependency
+//    private String notInjectableString;
+
     public DummyBean getDummyBean() {
         return dummyBean;
     }
@@ -38,4 +44,20 @@ public class SomebodyBean {
                 ", tommyBean=" + tommyBean +
                 '}';
     }
+
+//    public String getNotInjectableString() {
+//        return notInjectableString;
+//    }
+//
+//    public void setNotInjectableString(String notInjectableString) {
+//        this.notInjectableString = notInjectableString;
+//    }
+
+//    public int getNotInjectableInt() {
+//        return notInjectableInt;
+//    }
+//
+//    public void setNotInjectableInt(int notInjectableInt) {
+//        this.notInjectableInt = notInjectableInt;
+//    }
 }
