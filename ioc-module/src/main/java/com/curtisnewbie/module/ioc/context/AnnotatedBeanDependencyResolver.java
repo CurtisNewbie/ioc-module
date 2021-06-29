@@ -1,6 +1,7 @@
 package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.annotations.Dependency;
+import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
 import com.curtisnewbie.module.ioc.util.BeanNameUtil;
 
 import java.beans.BeanInfo;
@@ -36,16 +37,19 @@ public class AnnotatedBeanDependencyResolver implements BeanDependencyResolver {
             // the field has a @Dependency annotation & it contains a writer method
             if (f.isAnnotationPresent(Dependency.class)) {
                 PropertyDescriptor pd = pdMap.get(f.getName());
-                Objects.requireNonNull(pd, "Cannot resolve PropertyDescriptor for " + clz.toString() + " : " + f.getName());
+                Objects.requireNonNull(pd, "Cannot resolve PropertyDescriptor for " + clz.toString() +
+                        " : " + f.getName());
                 if (pd.getWriteMethod() != null) {
                     Class<?> propType = pd.getPropertyType();
                     if (isBoxedPrimitiveType(propType)) {
-                        throw new IllegalStateException("Basic/Primitive types are not supported for dependency injection, " +
-                                "field: " + f.getName());
+                        throw new TypeNotSupportedForInjectionException(
+                                "Basic/Primitive types are not supported for dependency injection, " +
+                                        "field: " + f.getName());
                     }
                     if (isCollections(propType)) {
-                        throw new IllegalStateException("Collections are not supported for dependency injection, " +
-                                "field: " + f.getName());
+                        throw new TypeNotSupportedForInjectionException(
+                                "Collections are not supported for dependency injection, " +
+                                        "field: " + f.getName());
                     }
                     String dependentBeanName = BeanNameUtil.toBeanName(propType);
                     // key: dependent's type, value: list of propertyInfo of this dependency type

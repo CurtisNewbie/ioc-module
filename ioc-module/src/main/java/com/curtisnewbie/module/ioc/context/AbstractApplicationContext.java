@@ -1,6 +1,8 @@
 package com.curtisnewbie.module.ioc.context;
 
 
+import com.curtisnewbie.module.ioc.exceptions.ContextInitializedException;
+
 /**
  * Abstract application context
  *
@@ -20,7 +22,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         synchronized (AbstractApplicationContext.class) {
             // validate if the application context has been initialised
             if (AbstractApplicationContext.mainClazz != null) {
-                throw new IllegalStateException("Context has been initialised, and it can only be initialised for once");
+                throw new ContextInitializedException("Context has been initialised, and it can only be initialised for once");
             }
             AbstractApplicationContext.mainClazz = mainClazz;
         }
