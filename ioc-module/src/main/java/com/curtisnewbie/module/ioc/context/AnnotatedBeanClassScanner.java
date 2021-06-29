@@ -9,6 +9,7 @@ import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 /**
@@ -20,13 +21,19 @@ import java.util.*;
  */
 public class AnnotatedBeanClassScanner implements BeanClassScanner {
 
+    private static final String ROOT_PATH = "";
+
     @Override
     public Set<Class<?>> scanBeanClasses(ClassLoader clzLoaderToUse) {
+        return scanClassWithAnnotation(MBean.class, clzLoaderToUse);
+    }
+
+    private <T extends Annotation> Set<Class<?>> scanClassWithAnnotation(Class<T> annotationClz, ClassLoader clzLoader) {
         Reflections r = new Reflections(new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage(""))
-                .addClassLoader(clzLoaderToUse)
+                .setUrls(ClasspathHelper.forPackage(ROOT_PATH))
+                .addClassLoader(clzLoader)
                 .addScanners(new SubTypesScanner(), new TypeAnnotationsScanner()));
-        return r.getTypesAnnotatedWith(MBean.class);
+        return r.getTypesAnnotatedWith(annotationClz);
     }
 
 }
