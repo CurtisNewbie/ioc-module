@@ -5,7 +5,7 @@ package com.curtisnewbie.module.ioc.exceptions;
  *
  * @author yongjie.zhuang
  */
-public abstract class ContextException extends Exception {
+public abstract class ContextException extends IllegalStateException {
 
     ContextException() {
 

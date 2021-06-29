@@ -1,6 +1,6 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.exceptions.SingletonBeanRegistered;
+import com.curtisnewbie.module.ioc.exceptions.*;
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
 
 import java.lang.reflect.Constructor;
@@ -17,7 +17,7 @@ import static com.curtisnewbie.module.ioc.util.BeanNameUtil.toBeanName;
  *
  * @author yongjie.zhuang
  */
-public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
+public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     /** A set of beans' names (a set that is backed by a concurrentHashMap) */
     private final Set<String> beanNameSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -45,7 +45,7 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
     /** Indicate whether this registry is initialized */
     private boolean isInitialise = false;
 
-    public DefaultSingletonBeanRegistryImpl() {
+    public DefaultSingletonBeanRegistry() {
         this.beanClzScanner = new AnnotatedBeanClassScanner();
         this.dependencyResolver = new AnnotatedBeanDependencyResolver();
     }
@@ -54,7 +54,7 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
     public void registerSingletonBean(String beanName, Object bean) {
         synchronized (getMutex()) {
             if (beanInstanceMap.get(beanName) != null) {
-                throw new IllegalStateException(beanName + " has been registered");
+                throw new SingletonBeanRegisteredException(beanName);
             }
             beanInstanceMap.put(beanName, bean);
             beanNameSet.add(beanName);
@@ -137,7 +137,7 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
 
             // can only be initialised once
             if (isInitialise)
-                throw new IllegalStateException("Bean registry cannot be initialized multiple times");
+                throw new ContextInitializedException("Bean registry cannot be initialized multiple times");
             isInitialise = true;
 
             Objects.requireNonNull(classLoader);
@@ -146,7 +146,7 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
             Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses(classLoader);
             for (Class<?> c : managedBeanClasses) {
                 if (c.isInterface()) {
-                    throw new IllegalStateException("Interface cannot be injected, type: " + c.toString());
+                    throw new TypeNotSupportedForInjectionException("Interface cannot be injected, type: " + c.toString());
                 }
                 String beanName = toBeanName(c);
                 beanTypeMap.put(beanName, c);
@@ -185,11 +185,11 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
         for (String dependent : dependencies.keySet()) {
             // detect unresolvable dependency
             if (!beanTypeMap.containsKey(dependent)) {
-                throw new IllegalStateException("Detected unresolvable dependency: " + dependent);
+                throw new UnsatisfiedDependencyException("Detected unresolvable dependency: " + dependent);
             }
             // detect circular dependency
             if (isDependent(beanName, dependent)) {
-                throw new IllegalStateException("Detected circular dependency between " + beanName + " and " + dependent);
+                throw new CircularDependencyException("Detected circular dependency between " + beanName + " and " + dependent);
             }
             // update dependency cache
             registerDependency(beanName, dependent);
@@ -218,7 +218,7 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
             Objects.requireNonNull(defConstructor, "Unable to create bean: " + beanName + " using default constructor");
             return defConstructor.newInstance();
         } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Unable to create bean: " + beanName + " using default constructor", e);
+            throw new BeanCreationException("Unable to create bean: " + beanName + " using default constructor", e);
         }
     }
 
@@ -243,7 +243,8 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
                     writeMethod.setAccessible(true);
                     writeMethod.invoke(bean, beanInstanceMap.get(dependentBeanName));
                 } catch (ReflectiveOperationException e) {
-                    throw new IllegalStateException("Unable to inject dependency in bean: " + beanName + ", field: " + prop.getPropertyName());
+                    throw new UnableToInjectDependencyException("Unable to inject dependency in bean: " + beanName
+                            + ", field: " + prop.getPropertyName());
                 }
             }
         }

@@ -1,7 +1,5 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,7 +17,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
     );
 
     public DefaultApplicationContext() {
-        this.singletonBeanRegistry = new DefaultSingletonBeanRegistryImpl();
+        this.singletonBeanRegistry = new DefaultSingletonBeanRegistry();
     }
 
     @Override
