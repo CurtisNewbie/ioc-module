@@ -15,6 +15,9 @@ public class SomebodyBean {
     @Dependency
     private TommyBean tommyBean;
 
+    @Dependency
+    private FurtherMaskedTommy furtherMaskedTommy;
+
 //    @Dependency
 //    private int notInjectableInt;
 
@@ -43,6 +46,14 @@ public class SomebodyBean {
                 "dummyBean=" + dummyBean +
                 ", tommyBean=" + tommyBean +
                 '}';
+    }
+
+    public FurtherMaskedTommy getFurtherMaskedTommy() {
+        return furtherMaskedTommy;
+    }
+
+    public void setFurtherMaskedTommy(FurtherMaskedTommy furtherMaskedTommy) {
+        this.furtherMaskedTommy = furtherMaskedTommy;
     }
 
 //    public String getNotInjectableString() {

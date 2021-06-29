@@ -36,7 +36,7 @@ public class AnnotatedBeanDependencyResolver implements BeanDependencyResolver {
             // the field has a @Dependency annotation & it contains a writer method
             if (f.isAnnotationPresent(Dependency.class)) {
                 PropertyDescriptor pd = pdMap.get(f.getName());
-                Objects.requireNonNull(pd, f.getName());
+                Objects.requireNonNull(pd, "Cannot resolve PropertyDescriptor for " + clz.toString() + " : " + f.getName());
                 if (pd.getWriteMethod() != null) {
                     Class<?> propType = pd.getPropertyType();
                     if (isBoxedPrimitiveType(propType)) {

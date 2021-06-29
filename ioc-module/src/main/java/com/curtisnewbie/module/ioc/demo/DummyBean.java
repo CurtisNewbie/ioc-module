@@ -10,13 +10,13 @@ import com.curtisnewbie.module.ioc.annotations.MBean;
 public class DummyBean {
 
     @Dependency
-    private TommyBean maskedTommy;
+    private MaskedTommy maskedTommy;
 
-    public TommyBean getMaskedTommy() {
+    public MaskedTommy getMaskedTommy() {
         return maskedTommy;
     }
 
-    public void setMaskedTommy(TommyBean maskedTommy) {
+    public void setMaskedTommy(MaskedTommy maskedTommy) {
         this.maskedTommy = maskedTommy;
     }
 
