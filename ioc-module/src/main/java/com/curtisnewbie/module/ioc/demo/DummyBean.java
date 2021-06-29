@@ -7,7 +7,7 @@ import com.curtisnewbie.module.ioc.annotations.MBean;
  * @author yongjie.zhuang
  */
 @MBean
-public class DummyBean {
+public class DummyBean implements HasName {
 
     @Dependency
     private MaskedTommy maskedTommy;

@@ -7,7 +7,7 @@ import com.curtisnewbie.module.ioc.annotations.MBean;
  * @author yongjie.zhuang
  */
 @MBean
-public class SomebodyBean {
+public class SomebodyBean implements HasName {
 
     @Dependency
     private DummyBean dummyBean;
@@ -40,14 +40,6 @@ public class SomebodyBean {
         this.tommyBean = tommyBean;
     }
 
-    @Override
-    public String toString() {
-        return "SomebodyBean{" +
-                "dummyBean=" + dummyBean +
-                ", tommyBean=" + tommyBean +
-                '}';
-    }
-
     public FurtherMaskedTommy getFurtherMaskedTommy() {
         return furtherMaskedTommy;
     }
@@ -71,4 +63,14 @@ public class SomebodyBean {
 //    public void setNotInjectableInt(int notInjectableInt) {
 //        this.notInjectableInt = notInjectableInt;
 //    }
+
+
+    @Override
+    public String toString() {
+        return "SomebodyBean{" +
+                "dummyBean=" + dummyBean +
+                ", tommyBean=" + tommyBean +
+                ", furtherMaskedTommy=" + furtherMaskedTommy +
+                '}';
+    }
 }

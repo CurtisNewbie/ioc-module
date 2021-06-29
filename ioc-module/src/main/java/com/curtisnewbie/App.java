@@ -3,8 +3,12 @@ package com.curtisnewbie;
 import com.curtisnewbie.module.ioc.annotations.MBean;
 import com.curtisnewbie.module.ioc.context.ApplicationContext;
 import com.curtisnewbie.module.ioc.context.ApplicationContextAware;
+import com.curtisnewbie.module.ioc.context.BeanRegistry;
 import com.curtisnewbie.module.ioc.context.ContextFactory;
+import com.curtisnewbie.module.ioc.demo.DummyBean;
+import com.curtisnewbie.module.ioc.demo.MaskedTommy;
 import com.curtisnewbie.module.ioc.demo.SomebodyBean;
+import com.curtisnewbie.module.ioc.demo.TommyBean;
 
 @MBean
 public class App implements ApplicationContextAware {
@@ -13,11 +17,24 @@ public class App implements ApplicationContextAware {
 
     public static void main(String[] args) {
 
+        // initialise context
         ContextFactory.getContextInitializer().initialize(App.class);
 
-        SomebodyBean b = applicationContext.getBeanRegistry().getBeanByClass(SomebodyBean.class);
+        // get registry
+        BeanRegistry registry = applicationContext.getBeanRegistry();
 
-        System.out.println(b.toString());
+        // demo
+        SomebodyBean b = registry.getBeanByClass(SomebodyBean.class);
+        b.sayName();
+
+        MaskedTommy mt = registry.getBeanByClass(MaskedTommy.class);
+        mt.sayName();
+
+        TommyBean tb = registry.getBeanByClass(TommyBean.class);
+        tb.sayName();
+
+        DummyBean db = registry.getBeanByClass(DummyBean.class);
+        db.sayName();
     }
 
     @Override
