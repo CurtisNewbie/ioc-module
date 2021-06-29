@@ -76,10 +76,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     private final Object mutex = new Object();
 
     /** Scanner of classes of annotated beans */
-    private final BeanClassScanner beanClzScanner;
+    private BeanClassScanner beanClzScanner;
 
     /** Resolver of beans' dependencies */
-    private final BeanDependencyResolver dependencyResolver;
+    private BeanDependencyResolver dependencyResolver;
 
     /** List of BeanPostProcessors that process the bean after instantiation */
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
@@ -376,6 +376,20 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                     throw new UnableToInjectDependencyException("Unable to inject dependency in field: " + prop.getPropertyName());
                 }
             }
+        }
+    }
+
+    void setBeanClassScanner(BeanClassScanner beanClassScanner) {
+        Objects.requireNonNull(beanClassScanner);
+        synchronized (getMutex()) {
+            this.beanClzScanner = beanClassScanner;
+        }
+    }
+
+    void setBeanDependencyResolver(BeanDependencyResolver beanDependencyResolver) {
+        Objects.requireNonNull(beanDependencyResolver);
+        synchronized (getMutex()) {
+            this.dependencyResolver = beanDependencyResolver;
         }
     }
 

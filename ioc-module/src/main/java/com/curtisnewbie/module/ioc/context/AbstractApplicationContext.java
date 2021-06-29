@@ -10,23 +10,20 @@ import com.curtisnewbie.module.ioc.exceptions.ContextInitializedException;
  */
 public abstract class AbstractApplicationContext implements ApplicationContext, ContextInitializer {
 
-    private static volatile Class<?> mainClazz;
+    private volatile Class<?> mainClazz;
+    private final Object mutex = new Object();
 
-    /**
-     * Initialise the application context
-     *
-     * @param mainClazz the class that contains the main(...) method
-     */
     @Override
-    public void initialize(Class<?> mainClazz) {
-        synchronized (AbstractApplicationContext.class) {
+    public ApplicationContext initialize(Class<?> mainClazz) {
+        synchronized (mutex) {
             // validate if the application context has been initialised
-            if (AbstractApplicationContext.mainClazz != null) {
+            if (this.mainClazz != null) {
                 throw new ContextInitializedException("Context has been initialised, and it can only be initialised for once");
             }
-            AbstractApplicationContext.mainClazz = mainClazz;
+            this.mainClazz = mainClazz;
         }
         initializeContext();
+        return this;
     }
 
     /**
@@ -35,7 +32,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
      * @see #initialize(Class)
      */
     public Class<?> getMainClazz() {
-        return AbstractApplicationContext.mainClazz;
+        return this.mainClazz;
     }
 
     /**

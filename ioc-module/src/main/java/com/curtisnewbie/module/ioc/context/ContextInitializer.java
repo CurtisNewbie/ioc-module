@@ -12,7 +12,8 @@ public interface ContextInitializer {
      * Initialize the context
      *
      * @param mainClazz the class that contains the main(...) method
+     * @return ApplicationContext
      */
-    void initialize(Class<?> mainClazz);
+    ApplicationContext initialize(Class<?> mainClazz);
 }
 

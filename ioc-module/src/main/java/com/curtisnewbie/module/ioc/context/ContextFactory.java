@@ -7,15 +7,13 @@ package com.curtisnewbie.module.ioc.context;
  */
 public class ContextFactory {
 
-    private static final ContextInitializer contextInitializer = new DefaultApplicationContext();
-
     private ContextFactory() {
     }
 
     /**
-     * Get cached ContextInitializer
+     * Get a new ContextInitializer (only one should be used)
      */
     public static ContextInitializer getContextInitializer() {
-        return contextInitializer;
+        return new DefaultApplicationContext();
     }
 }
