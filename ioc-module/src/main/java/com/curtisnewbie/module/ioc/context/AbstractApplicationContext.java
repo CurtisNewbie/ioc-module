@@ -37,13 +37,6 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
     }
 
     /**
-     * Get the classLoader of the main class
-     */
-    public ClassLoader getClassLoader() {
-        return getMainClazz().getClassLoader();
-    }
-
-    /**
      * Initialize the context, which includes creating the beans and injecting the dependencies, this method is invoked
      * internally by the {@link AbstractApplicationContext}, and should not be used externally
      */

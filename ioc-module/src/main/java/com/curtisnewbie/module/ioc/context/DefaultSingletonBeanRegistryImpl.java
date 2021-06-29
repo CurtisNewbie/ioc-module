@@ -1,6 +1,7 @@
 package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.exceptions.SingletonBeanRegistered;
+import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -39,7 +40,7 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
     /** List of BeanPostProcessors that process the bean after instantiation */
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
 
-    private volatile ClassLoader classLoader = this.getClass().getClassLoader();
+    private final ClassLoader classLoader = ClassLoaderHolder.getClassLoader();
 
     /** Indicate whether this registry is initialized */
     private boolean isInitialise = false;
@@ -245,13 +246,6 @@ public class DefaultSingletonBeanRegistryImpl implements SingletonBeanRegistry {
                     throw new IllegalStateException("Unable to inject dependency in bean: " + beanName + ", field: " + prop.getPropertyName());
                 }
             }
-        }
-    }
-
-    @Override
-    public void setClassLoader(ClassLoader classLoader) {
-        synchronized (getMutex()) {
-            this.classLoader = classLoader;
         }
     }
 

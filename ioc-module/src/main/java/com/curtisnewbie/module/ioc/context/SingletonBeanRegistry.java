@@ -1,7 +1,5 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.exceptions.SingletonBeanRegistered;
-
 import java.util.List;
 
 /**
@@ -9,7 +7,7 @@ import java.util.List;
  *
  * @author yongjie.zhuang
  */
-public interface SingletonBeanRegistry extends BeanRegistry, ClassLoaderAware {
+public interface SingletonBeanRegistry extends BeanRegistry {
 
     /**
      * Register a singleton bean with the name
