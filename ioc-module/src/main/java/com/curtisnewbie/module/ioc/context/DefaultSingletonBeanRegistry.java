@@ -1,5 +1,6 @@
 package com.curtisnewbie.module.ioc.context;
 
+import com.curtisnewbie.module.ioc.annotations.MBean;
 import com.curtisnewbie.module.ioc.exceptions.*;
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
 
@@ -189,7 +190,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses(classLoader);
             for (Class<?> c : managedBeanClasses) {
                 if (c.isInterface()) {
-                    throw new TypeNotSupportedForInjectionException("Interface cannot be injected, type: " + c.toString());
+                    throw new TypeNotSupportedForInjectionException(
+                            String.format("Interface cannot be created as a managed bean (e.g., using %s), type: %s",
+                                    MBean.class.getSimpleName(), c.toString())
+                    );
                 }
                 String beanName = toBeanName(c);
                 beanTypeMap.put(beanName, c);
