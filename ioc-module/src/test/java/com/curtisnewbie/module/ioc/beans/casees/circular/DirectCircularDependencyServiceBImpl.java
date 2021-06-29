@@ -7,7 +7,7 @@ import com.curtisnewbie.module.ioc.annotations.MBean;
  * @author yongjie.zhuang
  */
 @MBean
-public class CircularDependentServiceBImpl implements CircularDependentServiceB {
+public class DirectCircularDependencyServiceBImpl implements CircularDependentServiceB {
 
     @Dependency
     private CircularDependentServiceA circularDependentServiceA;

@@ -1,8 +1,8 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.beans.casees.circular.CircularDependentServiceAImpl;
-import com.curtisnewbie.module.ioc.beans.casees.circular.CircularDependentServiceBImpl;
-import com.curtisnewbie.module.ioc.beans.casees.annotation.InterfaceWithMBean;
+import com.curtisnewbie.module.ioc.beans.casees.circular.*;
+import com.curtisnewbie.module.ioc.beans.casees.invalid.BeanWithNotSupportedProperties;
+import com.curtisnewbie.module.ioc.beans.casees.invalid.InterfaceWithMBean;
 import com.curtisnewbie.module.ioc.beans.casees.normal.AuthenticationManager;
 import com.curtisnewbie.module.ioc.beans.casees.normal.Service;
 import com.curtisnewbie.module.ioc.beans.casees.normal.ServiceAggregator;
@@ -33,15 +33,38 @@ public class BeanRegistryTest {
     }
 
     @Test
-    public void shouldDetectCircularDependenciesWithInterfaces() {
+    public void shouldDetectNotInjectableBasicTypes() {
+        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithNotSupportedProperties.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable basic types (e.g., primitive types), might have a bug");
+    }
+
+    @Test
+    public void shouldDetectDirectCircularDependencies() {
         ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
         setupMockScanner(contextInitializer,
-                CircularDependentServiceAImpl.class,
-                CircularDependentServiceBImpl.class);
+                DirectCircularDependencyServiceAImpl.class,
+                DirectCircularDependencyServiceBImpl.class);
 
         Assertions.assertThrows(CircularDependencyException.class, () -> {
             contextInitializer.initialize(BeanRegistryTest.class);
-        }, "Should detect circular dependency, might have a bug");
+        }, "Should detect direct circular dependency, might have a bug");
+    }
+
+    @Test
+    public void shouldDetectIndirectCircularDependencies() {
+        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        setupMockScanner(contextInitializer,
+                IndirectCircularDependencyServiceAImpl.class,
+                IndirectCircularDependencyServiceBImpl.class,
+                IndirectCircularDependencyServiceCImpl.class);
+
+        Assertions.assertThrows(CircularDependencyException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect indirect/transitive circular dependency, might have a bug");
     }
 
     @Test
