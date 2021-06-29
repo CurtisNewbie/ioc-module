@@ -70,7 +70,15 @@ public class AnnotatedBeanDependencyResolver implements BeanDependencyResolver {
         if (clz.isPrimitive()) {
             return true;
         }
-        List<Class<?>> boxedTypes = Arrays.asList(Integer.class, String.class, Double.class, Float.class, Long.class, Short.class);
+        List<Class<?>> boxedTypes = Arrays.asList(
+                Integer.class,
+                String.class,
+                Double.class,
+                Float.class,
+                Long.class,
+                Short.class,
+                Byte.class
+        );
         return isTypes(clz, boxedTypes);
     }
 
