@@ -86,6 +86,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     private final ClassLoader classLoader = ClassLoaderHolder.getClassLoader();
 
+    private final BeanInstantiationStrategy beanInstantiationStrategy = new DefaultConstructorInstantiationStrategy();
+
     /** Indicate whether this registry is initialized, registry can only be initialised for once */
     private boolean isInitialised = false;
 
@@ -294,7 +296,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         2. inject dependencies
          */
         // instantiate the bean
-        Object bean = instantiateBean(implBeanName);
+        Object bean = beanInstantiationStrategy.instantiateBean(beanTypeMap.get(implBeanName));
         registerSingletonBean(implBeanName, bean);
 
         // inject dependencies
@@ -329,20 +331,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         if (beanName == null)
             return null;
         return beanTypeMap.get(beanName);
-    }
-
-    /** Instantiate bean with default constructor */
-    private Object instantiateBean(String beanName) {
-        Class<?> clz = findTypeOfPossiblyBeanAlias(beanName);
-        Objects.requireNonNull(clz, "Unable to find Class of bean: " + beanName);
-        // create bean with default constructor
-        try {
-            Constructor<?> defConstructor = clz.getDeclaredConstructor();
-            Objects.requireNonNull(defConstructor, "Unable to create bean: " + beanName + " using default constructor");
-            return defConstructor.newInstance();
-        } catch (ReflectiveOperationException e) {
-            throw new BeanCreationException("Unable to create bean: " + beanName + " using default constructor", e);
-        }
     }
 
     /**
