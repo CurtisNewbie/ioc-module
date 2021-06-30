@@ -6,12 +6,12 @@ import java.util.Set;
 /**
  * @author yongjie.zhuang
  */
-public class MockBeanClassScanner implements BeanClassScanner {
+public class MockBeanClassScanner extends AbstractBeanClassScanner implements BeanClassScanner {
 
     private Set<Class<?>> beanClassesFound = new HashSet<>();
 
     @Override
-    public Set<Class<?>> scanBeanClasses(ClassLoader clzLoaderToUse) {
+    public Set<Class<?>> scanBeanClasses() {
         return beanClassesFound;
     }
 

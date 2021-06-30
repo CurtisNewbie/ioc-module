@@ -1,7 +1,9 @@
 package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.beans.casees.circular.*;
+import com.curtisnewbie.module.ioc.beans.casees.invalid.BeanWithNotAccessibleField;
 import com.curtisnewbie.module.ioc.beans.casees.invalid.BeanWithNotSupportedProperties;
+import com.curtisnewbie.module.ioc.beans.casees.invalid.EmptyBean;
 import com.curtisnewbie.module.ioc.beans.casees.invalid.InterfaceWithMBean;
 import com.curtisnewbie.module.ioc.beans.casees.normal.AuthenticationManager;
 import com.curtisnewbie.module.ioc.beans.casees.normal.Service;
@@ -9,18 +11,34 @@ import com.curtisnewbie.module.ioc.beans.casees.normal.ServiceAggregator;
 import com.curtisnewbie.module.ioc.beans.casees.normal.UserServiceImpl;
 import com.curtisnewbie.module.ioc.exceptions.CircularDependencyException;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
+import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.logging.Logger;
 
 /**
  * @author yongjie.zhuang
  */
 @TestInstance(value = TestInstance.Lifecycle.PER_METHOD)
 public class BeanRegistryTest {
+
+    private static final Logger logger = Logger.getLogger(BeanRegistryTest.class.toString());
+
+    @Test
+    public void shouldDetectNotAccessibleProperty() {
+        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithNotAccessibleField.class, EmptyBean.class);
+
+        Assertions.assertThrows(UnableToInjectDependencyException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not accessible field, might have a bug");
+
+        logger.info("Test: bean with not accessible field -- passed");
+    }
 
     @Test
     public void shouldNotAllowInterfaceWithMBeanAnnotation() {
@@ -30,6 +48,8 @@ public class BeanRegistryTest {
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should throw exception for interface with @MBean, might have a bug");
+
+        logger.info("Test: @Bean on interfaces -- passed");
     }
 
     @Test
@@ -40,6 +60,8 @@ public class BeanRegistryTest {
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable basic types (e.g., primitive types), might have a bug");
+
+        logger.info("Test: bean with not injectable types -- passed");
     }
 
     @Test
@@ -52,6 +74,8 @@ public class BeanRegistryTest {
         Assertions.assertThrows(CircularDependencyException.class, () -> {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect direct circular dependency, might have a bug");
+
+        logger.info("Test: beans with direct circular dependencies -- passed");
     }
 
     @Test
@@ -65,6 +89,8 @@ public class BeanRegistryTest {
         Assertions.assertThrows(CircularDependencyException.class, () -> {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect indirect/transitive circular dependency, might have a bug");
+
+        logger.info("Test: beans with transitive/indirect circular dependencies -- passed");
     }
 
     @Test
@@ -81,14 +107,14 @@ public class BeanRegistryTest {
         // get bean by concrete class
         ServiceAggregator serviceAggregator = registry.getBeanByClass(ServiceAggregator.class);
         Assertions.assertNotNull(serviceAggregator, "Bean not found after initialisation, might have a bug");
-
-        serviceAggregator.whoIAm();
+//        serviceAggregator.whoIAm();
 
         // get bean by interface
         Service service = registry.getBeanByClass(Service.class);
-        Assertions.assertNotNull(serviceAggregator, "Bean not found after initialisation, might have a bug");
+        Assertions.assertNotNull(service, "Bean not found after initialisation, might have a bug");
+//        service.whoIAm();
 
-        service.whoIAm();
+        logger.info("Test: normal dependency injection -- passed");
     }
 
     private void setupMockScanner(ContextInitializer mockedInitializer, Class<?>... clazzToBeFound) {

@@ -2,6 +2,7 @@ package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.annotations.Dependency;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
+import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
 import com.curtisnewbie.module.ioc.util.BeanNameUtil;
 
 import java.beans.BeanInfo;
@@ -10,18 +11,17 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
- * Resolver of annotated beans' dependencies
+ * Parser of annotated beans' dependencies
  *
  * @author yongjie.zhuang
  */
-public class AnnotatedBeanDependencyResolver implements BeanDependencyResolver {
+public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
 
     @Override
-    public Map<String, List<PropertyInfo>> resolveDependenciesOfClass(Class<?> clz) {
-        Objects.requireNonNull(clz, "class is null, unable to resolve dependencies");
+    public Map<String, List<PropertyInfo>> parseDependenciesOfClass(Class<?> clz) {
+        Objects.requireNonNull(clz, "class is null, unable to parse dependencies");
         Map<String, List<PropertyInfo>> dependencies = new HashMap<>();
         Map<String, PropertyDescriptor> pdMap;
         try {
@@ -37,8 +37,10 @@ public class AnnotatedBeanDependencyResolver implements BeanDependencyResolver {
             // the field has a @Dependency annotation & it contains a writer method
             if (f.isAnnotationPresent(Dependency.class)) {
                 PropertyDescriptor pd = pdMap.get(f.getName());
-                Objects.requireNonNull(pd, "Cannot resolve PropertyDescriptor for " + clz.toString() +
-                        " : " + f.getName());
+                if (pd == null) {
+                    throw new UnableToInjectDependencyException("Cannot find PropertyDescriptor for " + clz.toString() +
+                            " : " + f.getName() + ", please make sure the field is accessible");
+                }
                 if (pd.getWriteMethod() != null) {
                     Class<?> propType = pd.getPropertyType();
                     if (isBoxedPrimitiveType(propType)) {

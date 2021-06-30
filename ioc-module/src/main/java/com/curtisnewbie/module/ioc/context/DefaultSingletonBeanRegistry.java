@@ -4,7 +4,6 @@ import com.curtisnewbie.module.ioc.annotations.MBean;
 import com.curtisnewbie.module.ioc.exceptions.*;
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,8 +77,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     /** Scanner of classes of annotated beans */
     private BeanClassScanner beanClzScanner;
 
-    /** Resolver of beans' dependencies */
-    private BeanDependencyResolver dependencyResolver;
+    /** Parser of beans' dependencies */
+    private BeanDependencyParser beanDependencyParser;
 
     /** List of BeanPostProcessors that process the bean after instantiation */
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
@@ -93,7 +92,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     public DefaultSingletonBeanRegistry() {
         this.beanClzScanner = new AnnotatedBeanClassScanner();
-        this.dependencyResolver = new AnnotatedBeanDependencyResolver();
+        this.beanDependencyParser = new AnnotatedBeanDependencyParser();
     }
 
     @Override
@@ -186,10 +185,11 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                 throw new ContextInitializedException("Bean registry cannot be initialized multiple times");
             isInitialised = true;
 
-            Objects.requireNonNull(classLoader);
+            // set the classloader to use
+            beanClzScanner.setClassLoader(classLoader);
 
             // set of classes of beans that will be managed by this context
-            Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses(classLoader);
+            Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses();
             for (Class<?> c : managedBeanClasses) {
                 if (c.isInterface()) {
                     throw new TypeNotSupportedForInjectionException(
@@ -269,7 +269,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         Class<?> beanClz = beanTypeMap.get(implBeanName);
         Objects.requireNonNull(beanClz, "Unable to find class of bean: " + beanName);
 
-        Map<String, List<PropertyInfo>> dependencies = dependencyResolver.resolveDependenciesOfClass(beanClz);
+        Map<String, List<PropertyInfo>> dependencies = beanDependencyParser.parseDependenciesOfClass(beanClz);
         for (String dependentAlias : dependencies.keySet()) {
             Class<?> dependentClz = findTypeOfPossiblyBeanAlias(dependentAlias);
             if (dependentClz == null)
@@ -374,10 +374,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
     }
 
-    void setBeanDependencyResolver(BeanDependencyResolver beanDependencyResolver) {
-        Objects.requireNonNull(beanDependencyResolver);
+    void setBeanDependencyParser(BeanDependencyParser beanDependencyParser) {
+        Objects.requireNonNull(beanDependencyParser);
         synchronized (getMutex()) {
-            this.dependencyResolver = beanDependencyResolver;
+            this.beanDependencyParser = beanDependencyParser;
         }
     }
 

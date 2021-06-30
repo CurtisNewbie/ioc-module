@@ -12,8 +12,15 @@ public interface BeanClassScanner {
     /**
      * Scan beans' class
      *
-     * @param clzLoaderToUse the classLoader to use
      * @return set of classes
      */
-    Set<Class<?>> scanBeanClasses(ClassLoader clzLoaderToUse);
+    Set<Class<?>> scanBeanClasses();
+
+    /**
+     * Set the classloader to be used by the scanner, if not being set, the default classloader will be used instead.
+     *
+     * @param classLoader classLoader
+     */
+    void setClassLoader(ClassLoader classLoader);
+
 }
