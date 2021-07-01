@@ -3,11 +3,14 @@ package com.curtisnewbie.module.ioc.context;
 import com.curtisnewbie.module.ioc.annotations.MBean;
 import com.curtisnewbie.module.ioc.exceptions.*;
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
+import com.curtisnewbie.module.ioc.util.LogUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 import static com.curtisnewbie.module.ioc.util.BeanNameUtil.toBeanName;
+import static com.curtisnewbie.module.ioc.util.LogUtil.info;
 
 /**
  * Implementation of {@link SingletonBeanRegistry}
@@ -15,6 +18,8 @@ import static com.curtisnewbie.module.ioc.util.BeanNameUtil.toBeanName;
  * @author yongjie.zhuang
  */
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
+
+    private static final Logger logger = LogUtil.getLogger(DefaultSingletonBeanRegistry.class);
 
     /**
      * Set of beans' name (excluding aliases)
@@ -201,23 +206,30 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                 throw new ContextInitializedException("Bean registry cannot be initialized multiple times");
             isInitialised = true;
 
+            info(logger, "Starts loading bean registry");
+
             // set the classloader to use
             beanClzScanner.setClassLoader(classLoader);
 
             // prepare the registry before starting to populate beans and inject dependencies
             prepareBeanRegistry();
+            info(logger, "Bean registry prepared");
 
             // set of classes of beans that will be managed by this context
             Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses();
+            info(logger, "Discovered beans: %d", managedBeanClasses.size());
 
             // register these managed beans, including their interfaces as aliases
             registerManagedBeans(managedBeanClasses);
+            info(logger, "Beans registered");
 
             // resolve their dependencies
             resolveDependencies();
+            info(logger, "Beans dependencies resolved");
 
             // apply post processing after bean instantiation
             applyPostProcessing();
+            info(logger, "Beans post processing applied");
         }
     }
 

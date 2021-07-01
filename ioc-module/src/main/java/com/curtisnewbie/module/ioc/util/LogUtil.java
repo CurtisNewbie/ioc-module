@@ -27,7 +27,7 @@ public final class LogUtil {
      * will be empty string
      * </p>
      */
-    public static void logFormatted(Logger logger, String formatStr, Object... args) {
+    public static void info(Logger logger, String formatStr, Object... args) {
         if (args.length < 1)
             logger.logp(Level.INFO, logger.getName(), EMPTY_METHOD_NAME, formatStr);
         else

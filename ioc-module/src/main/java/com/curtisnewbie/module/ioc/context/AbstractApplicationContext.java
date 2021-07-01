@@ -37,9 +37,10 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         // stop timer
         timer.stop();
 
-        LogUtil.logFormatted(
+        LogUtil.info(
                 logger,
-                "ApplicationContext successfully initialized, took %d milliseconds",
+                "ApplicationContext successfully initialized for %s, took %d milliseconds",
+                this.mainClazz.getName(),
                 timer.getMilliSeconds());
         return this;
     }
