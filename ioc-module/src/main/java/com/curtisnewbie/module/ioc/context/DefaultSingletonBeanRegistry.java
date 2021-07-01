@@ -179,8 +179,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     @Override
     public void loadBeanRegistry() {
 
-        // TODO: 01/07/2021 how to inject the context-related beans in an extensible way
-
         synchronized (getMutex()) {
 
             // can only be initialised once
