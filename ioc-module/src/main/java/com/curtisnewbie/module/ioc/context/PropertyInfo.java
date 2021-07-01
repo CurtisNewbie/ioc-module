@@ -1,9 +1,8 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
-
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
  * Info of property
@@ -15,14 +14,17 @@ public class PropertyInfo {
     /**
      * Name of the field/property
      */
-    private String propertyName;
+    private final String propertyName;
 
     /**
      * Descriptor of the property
      */
-    private PropertyDescriptor propertyDescriptor;
+    private final PropertyDescriptor propertyDescriptor;
 
     public PropertyInfo(String propertyName, PropertyDescriptor propertyDescriptor) {
+        Objects.requireNonNull(propertyName);
+        Objects.requireNonNull(propertyDescriptor);
+
         this.propertyName = propertyName;
         this.propertyDescriptor = propertyDescriptor;
     }
@@ -31,16 +33,8 @@ public class PropertyInfo {
         return propertyDescriptor;
     }
 
-    public void setPropertyDescriptor(PropertyDescriptor propertyDescriptor) {
-        this.propertyDescriptor = propertyDescriptor;
-    }
-
     public String getPropertyName() {
         return propertyName;
-    }
-
-    public void setPropertyName(String propertyName) {
-        this.propertyName = propertyName;
     }
 
     /**
