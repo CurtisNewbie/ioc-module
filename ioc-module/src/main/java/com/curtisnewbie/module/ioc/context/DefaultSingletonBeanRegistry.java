@@ -328,7 +328,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     private void applyPostProcessing() {
         for (BeanPostProcessor p : this.beanPostProcessors) {
             for (Map.Entry<String, Object> bean : this.beanInstanceMap.entrySet()) {
-                p.postProcessBean(bean.getValue(), bean.getKey());
+                Object processedObj = p.postProcessBean(bean.getValue(), bean.getKey());
+                Objects.requireNonNull(processedObj, "BeanPostProcessor " + p.getClass().getSimpleName()
+                        + " should not return null object after processing");
+                this.beanInstanceMap.replace(bean.getKey(), processedObj);
             }
         }
     }

@@ -12,7 +12,9 @@ public interface BeanPostProcessor {
      *
      * @param bean     bean's instance
      * @param beanName bean's name
+     * @return bean after processing (e.g., if the post-processing is for adding a proxy, then the returned object will
+     * be the proxy)
      */
-    void postProcessBean(Object bean, String beanName);
+    Object postProcessBean(Object bean, String beanName);
 
 }
