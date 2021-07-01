@@ -59,7 +59,7 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
                 String dependentBeanName = BeanNameUtil.toBeanName(propType);
                 // key: dependent's type, value: list of propertyInfo of this dependency type
                 dependencies.computeIfAbsent(dependentBeanName, k -> new ArrayList<>());
-                dependencies.get(dependentBeanName).add(new PropertyInfo(f.getName(), pd, propType));
+                dependencies.get(dependentBeanName).add(new PropertyInfo(f.getName(), pd));
             }
         }
         return dependencies;

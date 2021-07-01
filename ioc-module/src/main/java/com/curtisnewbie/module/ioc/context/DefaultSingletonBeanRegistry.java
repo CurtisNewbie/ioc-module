@@ -4,7 +4,6 @@ import com.curtisnewbie.module.ioc.annotations.MBean;
 import com.curtisnewbie.module.ioc.exceptions.*;
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
 
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -431,13 +430,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         Objects.requireNonNull(dependentImplBeanInstance, "Unable to find instance of bean: " + dependentImplBeanName);
 
         for (PropertyInfo prop : toBeInjectedProperties) {
-            Class<?> requiredType = prop.getPropertyBeanType();
-            if (requiredType.isAssignableFrom(dependentImplBeanInstance.getClass())) {
-                Method writeMethod = prop.getPropertyDescriptor().getWriteMethod();
+            if (prop.isPropertyTypeAssignableFrom(dependentImplBeanInstance.getClass())) {
                 try {
                     // inject the dependent bean into the field
-                    writeMethod.setAccessible(true);
-                    writeMethod.invoke(bean, requiredType.cast(dependentImplBeanInstance));
+                    prop.writeValueToPropertyOfBean(bean, dependentImplBeanInstance);
                 } catch (ReflectiveOperationException e) {
                     throw new UnableToInjectDependencyException("Unable to inject dependency in field: " + prop.getPropertyName());
                 }

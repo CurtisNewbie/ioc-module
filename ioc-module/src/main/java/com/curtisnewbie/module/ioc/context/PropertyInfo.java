@@ -1,6 +1,9 @@
 package com.curtisnewbie.module.ioc.context;
 
+import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
+
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
 
 /**
  * Info of property
@@ -8,8 +11,6 @@ import java.beans.PropertyDescriptor;
  * @author yongjie.zhuang
  */
 public class PropertyInfo {
-
-    private Class<?> propertyBeanType;
 
     /**
      * Name of the field/property
@@ -21,10 +22,9 @@ public class PropertyInfo {
      */
     private PropertyDescriptor propertyDescriptor;
 
-    public PropertyInfo(String propertyName, PropertyDescriptor propertyDescriptor, Class<?> propertyBeanType) {
+    public PropertyInfo(String propertyName, PropertyDescriptor propertyDescriptor) {
         this.propertyName = propertyName;
         this.propertyDescriptor = propertyDescriptor;
-        this.propertyBeanType = propertyBeanType;
     }
 
     public PropertyDescriptor getPropertyDescriptor() {
@@ -43,11 +43,23 @@ public class PropertyInfo {
         this.propertyName = propertyName;
     }
 
-    public Class<?> getPropertyBeanType() {
-        return propertyBeanType;
+    /**
+     * Check whether this property's type is assignable from the given type
+     */
+    public boolean isPropertyTypeAssignableFrom(Class<?> type) {
+        return this.getPropertyDescriptor().getPropertyType().isAssignableFrom(type);
     }
 
-    public void setPropertyBeanType(Class<?> propertyBeanType) {
-        this.propertyBeanType = propertyBeanType;
+    /**
+     * Set property value to the {@code targetObject} using write method
+     *
+     * @param targetObject target object
+     * @param value        value to be set
+     * @throws ReflectiveOperationException when the operation is failed
+     */
+    public void writeValueToPropertyOfBean(Object targetObject, Object value) throws ReflectiveOperationException {
+        Method writeMethod = propertyDescriptor.getWriteMethod();
+        writeMethod.setAccessible(true);
+        writeMethod.invoke(targetObject, value);
     }
 }
