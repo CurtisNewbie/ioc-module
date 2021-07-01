@@ -5,7 +5,7 @@ package com.curtisnewbie.module.ioc.context;
  *
  * @author yongjie.zhuang
  */
-public class ContextFactory {
+public final class ContextFactory {
 
     private ContextFactory() {
     }
@@ -13,7 +13,7 @@ public class ContextFactory {
     /**
      * Get a new ContextInitializer (only one should be used)
      */
-    public static ContextInitializer getContextInitializer() {
+    public static ContextInitializer getNewContextInitializer() {
         return new DefaultApplicationContext();
     }
 }

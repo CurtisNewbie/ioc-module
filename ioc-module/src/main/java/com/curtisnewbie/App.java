@@ -18,7 +18,7 @@ public class App implements ApplicationContextAware {
     public static void main(String[] args) {
 
         // initialise context
-        ContextFactory.getContextInitializer().initialize(App.class);
+        ContextFactory.getNewContextInitializer().initialize(App.class);
 
         // get registry
         BeanRegistry registry = applicationContext.getBeanRegistry();

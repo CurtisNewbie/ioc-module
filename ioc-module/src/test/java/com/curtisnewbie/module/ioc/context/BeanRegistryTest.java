@@ -27,7 +27,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotAccessibleProperty() {
-        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithNotAccessibleField.class, EmptyBean.class);
 
         Assertions.assertThrows(UnableToInjectDependencyException.class, () -> {
@@ -39,7 +39,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldNotAllowInterfaceWithMBeanAnnotation() {
-        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, InterfaceWithMBean.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -51,7 +51,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableBasicTypes() {
-        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithNotSupportedProperties.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -63,7 +63,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectDirectCircularDependencies() {
-        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 DirectCircularDependencyServiceAImpl.class,
                 DirectCircularDependencyServiceBImpl.class);
@@ -77,7 +77,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectIndirectCircularDependencies() {
-        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 IndirectCircularDependencyServiceAImpl.class,
                 IndirectCircularDependencyServiceBImpl.class,
@@ -92,7 +92,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldInjectContextRelatedBeans() {
-        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 BeanWithContextBeans.class);
 
@@ -109,7 +109,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldSuccessfullyInitialised() {
-        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 AuthenticationManager.class,
                 UserServiceImpl.class,
