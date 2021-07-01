@@ -1,6 +1,4 @@
-package com.curtisnewbie.module.ioc.demo;
-
-import com.curtisnewbie.module.ioc.annotations.MBean;
+package com.curtisnewbie.demo;
 
 /**
  * @author yongjie.zhuang

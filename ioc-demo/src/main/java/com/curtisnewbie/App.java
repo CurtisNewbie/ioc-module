@@ -1,14 +1,14 @@
 package com.curtisnewbie;
 
+import com.curtisnewbie.demo.DummyBean;
+import com.curtisnewbie.demo.MaskedTommy;
+import com.curtisnewbie.demo.SomebodyBean;
+import com.curtisnewbie.demo.TommyBean;
 import com.curtisnewbie.module.ioc.annotations.MBean;
 import com.curtisnewbie.module.ioc.context.ApplicationContext;
 import com.curtisnewbie.module.ioc.context.ApplicationContextAware;
 import com.curtisnewbie.module.ioc.context.BeanRegistry;
 import com.curtisnewbie.module.ioc.context.ContextFactory;
-import com.curtisnewbie.module.ioc.demo.DummyBean;
-import com.curtisnewbie.module.ioc.demo.MaskedTommy;
-import com.curtisnewbie.module.ioc.demo.SomebodyBean;
-import com.curtisnewbie.module.ioc.demo.TommyBean;
 
 @MBean
 public class App implements ApplicationContextAware {

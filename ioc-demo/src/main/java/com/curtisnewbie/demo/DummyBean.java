@@ -1,4 +1,4 @@
-package com.curtisnewbie.module.ioc.demo;
+package com.curtisnewbie.demo;
 
 import com.curtisnewbie.module.ioc.annotations.Dependency;
 import com.curtisnewbie.module.ioc.annotations.MBean;
