@@ -1,4 +1,4 @@
-package com.curtisnewbie.module.ioc.context;
+package com.curtisnewbie.module.ioc.context.processing;
 
 import com.curtisnewbie.module.ioc.exceptions.BeanCreationException;
 

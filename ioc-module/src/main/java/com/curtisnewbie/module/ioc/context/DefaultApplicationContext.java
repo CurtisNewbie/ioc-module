@@ -1,10 +1,11 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.util.LogUtil;
+import com.curtisnewbie.module.ioc.context.processing.BeanPostProcessor;
+import com.curtisnewbie.module.ioc.context.processing.ContextAwareBeanPostProcessor;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Objects;
 
 /**
  * Default implementation of application context, which currently only supports singleton beans
@@ -36,5 +37,11 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
     @Override
     public BeanRegistry getBeanRegistry() {
         return singletonBeanRegistry;
+    }
+
+    @Override
+    public void registerBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
+        Objects.requireNonNull(beanPostProcessor);
+        this.beanPostProcessorList.add(beanPostProcessor);
     }
 }

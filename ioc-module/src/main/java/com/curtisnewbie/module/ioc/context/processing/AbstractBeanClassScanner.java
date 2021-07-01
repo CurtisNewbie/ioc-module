@@ -1,13 +1,8 @@
-package com.curtisnewbie.module.ioc.context;
+package com.curtisnewbie.module.ioc.context.processing;
 
 
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
 import com.curtisnewbie.module.ioc.util.ReflectionsScanUtil;
-import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.annotation.Annotation;
 import java.util.*;

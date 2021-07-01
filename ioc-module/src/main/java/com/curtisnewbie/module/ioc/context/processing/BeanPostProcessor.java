@@ -1,4 +1,4 @@
-package com.curtisnewbie.module.ioc.context;
+package com.curtisnewbie.module.ioc.context.processing;
 
 /**
  * Post processor of bean
@@ -8,7 +8,7 @@ package com.curtisnewbie.module.ioc.context;
 public interface BeanPostProcessor {
 
     /**
-     * Do post processing of bean
+     * Do post processing of bean (after bean instantiation and dependency injection)
      *
      * @param bean     bean's instance
      * @param beanName bean's name

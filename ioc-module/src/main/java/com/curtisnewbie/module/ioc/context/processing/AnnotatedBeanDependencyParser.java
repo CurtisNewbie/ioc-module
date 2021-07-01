@@ -1,6 +1,7 @@
-package com.curtisnewbie.module.ioc.context;
+package com.curtisnewbie.module.ioc.context.processing;
 
 import com.curtisnewbie.module.ioc.annotations.Dependency;
+import com.curtisnewbie.module.ioc.context.PropertyInfo;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
 import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
 import com.curtisnewbie.module.ioc.util.BeanNameUtil;

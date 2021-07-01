@@ -6,7 +6,7 @@ import com.curtisnewbie.demo.SomebodyBean;
 import com.curtisnewbie.demo.TommyBean;
 import com.curtisnewbie.module.ioc.annotations.MBean;
 import com.curtisnewbie.module.ioc.context.ApplicationContext;
-import com.curtisnewbie.module.ioc.context.ApplicationContextAware;
+import com.curtisnewbie.module.ioc.context.aware.ApplicationContextAware;
 import com.curtisnewbie.module.ioc.context.BeanRegistry;
 import com.curtisnewbie.module.ioc.context.ContextFactory;
 

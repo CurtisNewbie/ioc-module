@@ -1,4 +1,4 @@
-package com.curtisnewbie.module.ioc.context;
+package com.curtisnewbie.module.ioc.context.processing;
 
 /**
  * Strategy to instantiate beans (not including dependency injection)

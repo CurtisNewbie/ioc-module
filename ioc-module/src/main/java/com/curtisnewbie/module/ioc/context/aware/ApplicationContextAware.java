@@ -1,4 +1,6 @@
-package com.curtisnewbie.module.ioc.context;
+package com.curtisnewbie.module.ioc.context.aware;
+
+import com.curtisnewbie.module.ioc.context.ApplicationContext;
 
 /**
  * Type that is aware of the {@link ApplicationContext}

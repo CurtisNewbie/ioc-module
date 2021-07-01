@@ -1,6 +1,7 @@
 package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.annotations.MBean;
+import com.curtisnewbie.module.ioc.context.processing.*;
 import com.curtisnewbie.module.ioc.exceptions.*;
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
 import com.curtisnewbie.module.ioc.util.LogUtil;
@@ -89,7 +90,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     private final ClassLoader classLoader = ClassLoaderHolder.getClassLoader();
 
-    private final BeanInstantiationStrategy beanInstantiationStrategy = new DefaultConstructorInstantiationStrategy();
+    private BeanInstantiationStrategy beanInstantiationStrategy = new DefaultConstructorInstantiationStrategy();
 
     /** Indicate whether this registry is initialized, registry can only be initialised for once */
     private boolean isInitialised = false;
@@ -457,10 +458,19 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     }
 
     /** Set {@link BeanClassScanner} to be used by the registry, should invoke this before {@link #loadBeanRegistry()} */
-    void setBeanClassScanner(BeanClassScanner beanClassScanner) {
+    @Override
+    public void setBeanClassScanner(BeanClassScanner beanClassScanner) {
         Objects.requireNonNull(beanClassScanner);
         synchronized (getMutex()) {
             this.beanClzScanner = beanClassScanner;
+        }
+    }
+
+    @Override
+    public void setBeanInstantiationStrategy(BeanInstantiationStrategy beanInstantiationStrategy) {
+        Objects.requireNonNull(beanInstantiationStrategy);
+        synchronized (getMutex()) {
+            this.beanInstantiationStrategy = beanInstantiationStrategy;
         }
     }
 
@@ -468,7 +478,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      * Set {@link BeanDependencyParser} to be used by the registry, should invoke this before {@link
      * #loadBeanRegistry()}
      */
-    void setBeanDependencyParser(BeanDependencyParser beanDependencyParser) {
+    @Override
+    public void setBeanDependencyParser(BeanDependencyParser beanDependencyParser) {
         Objects.requireNonNull(beanDependencyParser);
         synchronized (getMutex()) {
             this.beanDependencyParser = beanDependencyParser;

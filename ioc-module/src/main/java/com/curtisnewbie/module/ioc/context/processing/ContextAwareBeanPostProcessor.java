@@ -1,4 +1,7 @@
-package com.curtisnewbie.module.ioc.context;
+package com.curtisnewbie.module.ioc.context.processing;
+
+import com.curtisnewbie.module.ioc.context.ApplicationContext;
+import com.curtisnewbie.module.ioc.context.aware.ApplicationContextAware;
 
 /**
  * BeanPostProcessor for {@link ApplicationContextAware}
@@ -9,7 +12,7 @@ public class ContextAwareBeanPostProcessor implements BeanPostProcessor {
 
     private ApplicationContext applicationContext;
 
-    ContextAwareBeanPostProcessor(ApplicationContext applicationContext) {
+    public ContextAwareBeanPostProcessor(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 

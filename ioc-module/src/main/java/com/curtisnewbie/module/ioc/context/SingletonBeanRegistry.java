@@ -1,7 +1,5 @@
 package com.curtisnewbie.module.ioc.context;
 
-import java.util.List;
-
 /**
  * Registry of singleton beans
  * <p>
@@ -10,7 +8,7 @@ import java.util.List;
  *
  * @author yongjie.zhuang
  */
-public interface SingletonBeanRegistry extends BeanRegistry {
+public interface SingletonBeanRegistry extends ConfigurableBeanRegistry {
 
     /**
      * Register a singleton bean with the name
@@ -53,9 +51,4 @@ public interface SingletonBeanRegistry extends BeanRegistry {
      * Which includes scanning beans' classes, instantiating beans and injecting their dependencies
      */
     void loadBeanRegistry();
-
-    /**
-     * Register a list of {@link BeanPostProcessor}
-     */
-    void registerBeanPostProcessor(List<BeanPostProcessor> beanPostProcessorList);
 }

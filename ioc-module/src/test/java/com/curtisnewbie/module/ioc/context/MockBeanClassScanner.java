@@ -1,5 +1,8 @@
 package com.curtisnewbie.module.ioc.context;
 
+import com.curtisnewbie.module.ioc.context.processing.AbstractBeanClassScanner;
+import com.curtisnewbie.module.ioc.context.processing.BeanClassScanner;
+
 import java.util.HashSet;
 import java.util.Set;
 
