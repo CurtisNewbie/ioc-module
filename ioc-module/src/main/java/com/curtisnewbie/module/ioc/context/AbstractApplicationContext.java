@@ -2,6 +2,10 @@ package com.curtisnewbie.module.ioc.context;
 
 
 import com.curtisnewbie.module.ioc.exceptions.ContextInitializedException;
+import com.curtisnewbie.module.ioc.util.CountdownTimer;
+import com.curtisnewbie.module.ioc.util.LogUtil;
+
+import java.util.logging.Logger;
 
 /**
  * Abstract application context
@@ -10,6 +14,7 @@ import com.curtisnewbie.module.ioc.exceptions.ContextInitializedException;
  */
 public abstract class AbstractApplicationContext implements ApplicationContext, ContextInitializer {
 
+    private static final Logger logger = LogUtil.getLogger(AbstractApplicationContext.class);
     private volatile Class<?> mainClazz;
     private final Object mutex = new Object();
 
@@ -22,7 +27,20 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             }
             this.mainClazz = mainClazz;
         }
+
+        // start timer
+        CountdownTimer timer = new CountdownTimer().start();
+
+        // delegate to subclasses to initialise the actual context
         initializeContext();
+
+        // stop timer
+        timer.stop();
+
+        LogUtil.logFormatted(
+                logger,
+                "ApplicationContext successfully initialized, took %d milliseconds",
+                timer.getMilliSeconds());
         return this;
     }
 

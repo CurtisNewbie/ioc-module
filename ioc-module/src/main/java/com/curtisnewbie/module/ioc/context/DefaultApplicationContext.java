@@ -1,7 +1,10 @@
 package com.curtisnewbie.module.ioc.context;
 
+import com.curtisnewbie.module.ioc.util.LogUtil;
+
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Default implementation of application context, which currently only supports singleton beans
