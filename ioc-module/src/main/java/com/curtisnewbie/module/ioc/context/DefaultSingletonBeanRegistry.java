@@ -97,6 +97,9 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     @Override
     public void registerSingletonBean(String beanName, Object bean) {
+        Objects.requireNonNull(beanName);
+        Objects.requireNonNull(bean);
+
         synchronized (getMutex()) {
             if (beanInstanceMap.get(beanName) != null) {
                 throw new SingletonBeanRegisteredException(beanName);
@@ -109,12 +112,18 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     @Override
     public void registerSingletonBean(Class<?> clazz, Object bean) {
+        Objects.requireNonNull(clazz);
+        Objects.requireNonNull(bean);
+
         String beanName = toBeanName(clazz);
         registerSingletonBean(beanName, bean);
     }
 
     @Override
     public void registerDependency(String beanName, String dependentBeanName) {
+        Objects.requireNonNull(beanName);
+        Objects.requireNonNull(dependentBeanName);
+
         synchronized (this.dependenciesMap) {
             this.dependenciesMap.computeIfAbsent(beanName, k -> new HashSet<>());
             this.dependenciesMap.get(beanName).add(dependentBeanName);
@@ -123,8 +132,11 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     @Override
     public boolean isDependent(String beanName, String dependentBeanName) {
+        Objects.requireNonNull(beanName);
+        Objects.requireNonNull(dependentBeanName);
+
         synchronized (this.dependenciesMap) {
-            return this.isDependentRecursive(beanName, dependentBeanName, new HashSet<>());
+            return this.checkIsDependentRecursively(beanName, dependentBeanName, new HashSet<>());
         }
     }
 
@@ -135,7 +147,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      * @param dependentBeanName the other bean that current bean might be dependent on
      * @param beansSeen         the beans that we have seen
      */
-    private boolean isDependentRecursive(String beanName, String dependentBeanName, Set<String> beansSeen) {
+    private boolean checkIsDependentRecursively(String beanName, String dependentBeanName, Set<String> beansSeen) {
         // circular dependency, not dependent
         if (beansSeen.contains(beanName)) {
             return false;
@@ -150,7 +162,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         // check transitive dependencies
         for (String d : dependentBeans) {
             beansSeen.add(d);
-            if (isDependentRecursive(d, dependentBeanName, beansSeen)) {
+            if (checkIsDependentRecursively(d, dependentBeanName, beansSeen)) {
                 return true;
             }
         }
@@ -159,21 +171,25 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     @Override
     public boolean containsBean(String name) {
+        Objects.requireNonNull(name);
         return beanInstanceMap.containsKey(name);
     }
 
     @Override
     public boolean containsBean(Class<?> clazz) {
-        return beanInstanceMap.containsKey(findNameOfPossiblyBeanAlias(toBeanName(clazz)));
+        Objects.requireNonNull(clazz);
+        return beanInstanceMap.containsKey(findNameOfPossibleBeanAlias(toBeanName(clazz)));
     }
 
     @Override
     public <T> T getBeanByClass(Class<T> clazz) {
+        Objects.requireNonNull(clazz);
         return clazz.cast(getBeanByName(toBeanName(clazz)));
     }
 
     public Object getBeanByName(String beanName) {
-        return beanInstanceMap.get(findNameOfPossiblyBeanAlias(beanName));
+        Objects.requireNonNull(beanName);
+        return beanInstanceMap.get(findNameOfPossibleBeanAlias(beanName));
     }
 
     @Override
@@ -194,68 +210,83 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
             // set of classes of beans that will be managed by this context
             Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses();
-            for (Class<?> c : managedBeanClasses) {
-                if (c.isInterface()) {
-                    throw new TypeNotSupportedForInjectionException(
-                            String.format("Interface cannot be created as a managed bean (e.g., using %s), type: %s",
-                                    MBean.class.getSimpleName(), c.toString())
-                    );
-                }
-                String beanName = toBeanName(c);
-                beanTypeMap.put(beanName, c);
-                beanNameSet.add(beanName);
 
-                // register the interfaces' name as this bean's alias
-                Set<Class<?>> interfaces = new HashSet<>();
+            // register these managed beans, including their interfaces as aliases
+            registerManagedBeans(managedBeanClasses);
 
-                // interfaces that will be collected
-                Queue<Class<?>> toBeAddedInterfaces = new LinkedList<>(Arrays.asList(c.getInterfaces()));
+            // resolve their dependencies
+            resolveDependencies();
 
-                while (!toBeAddedInterfaces.isEmpty()) {
-                    Class<?> f = toBeAddedInterfaces.poll();
+            // apply post processing after bean instantiation
+            applyPostProcessing();
+        }
+    }
 
-                    // have seen this interface already
-                    if (interfaces.contains(f))
-                        continue;
+    /**
+     * Register a set of beans' classes that are found by the scanner
+     * <br>
+     * Registering, means loading these classes into the {@link #beanTypeMap}, {@link #beanNameSet}, {@link
+     * #beanAliasMap}, this method doesn't involve populating the beans and injectiong their dependencies.
+     * <br>
+     * This method also collect their interfaces, and use them as aliases, such that we can find a bean (of the actual
+     * concrete implementation) by one of the interface that it implements.
+     *
+     * @see #loadBeanRegistry()
+     * @see #resolveBeanRecursively(String)
+     * @see #applyPostProcessing()
+     */
+    private void registerManagedBeans(Set<Class<?>> managedBeanClasses) {
+        for (Class<?> c : managedBeanClasses) {
+            if (c.isInterface()) {
+                throw new TypeNotSupportedForInjectionException(
+                        String.format("Interface cannot be created as a managed bean (e.g., using %s), type: %s",
+                                MBean.class.getSimpleName(), c.toString())
+                );
+            }
+            String beanName = toBeanName(c);
+            beanTypeMap.put(beanName, c);
+            beanNameSet.add(beanName);
 
-                    interfaces.add(f);
+            // register the interfaces' name as this bean's alias
+            Set<Class<?>> interfaces = new HashSet<>();
+
+            // interfaces that will be collected
+            Queue<Class<?>> toBeAddedInterfaces = new LinkedList<>(Arrays.asList(c.getInterfaces()));
+
+            while (!toBeAddedInterfaces.isEmpty()) {
+                Class<?> f = toBeAddedInterfaces.poll();
+
+                // have seen this interface already
+                if (interfaces.contains(f))
+                    continue;
+
+                interfaces.add(f);
 
                     /*
                     check if this interface has parent interfaces, if so, put them into the queue
                     */
-                    Class<?>[] parents = f.getInterfaces();
-                    if (parents != null && parents.length > 0) {
-                        toBeAddedInterfaces.addAll(Arrays.asList(parents));
-                    }
+                Class<?>[] parents = f.getInterfaces();
+                if (parents != null && parents.length > 0) {
+                    toBeAddedInterfaces.addAll(Arrays.asList(parents));
                 }
+            }
 
-                for (Class<?> ic : interfaces) {
+            for (Class<?> ic : interfaces) {
                     /*
                     if the alias map already had this interface,
                     this means that two or more beans are sharing the same interface, but
                     it doesn't necessary cause circular dependency, as long as the different interfaces
                     are used for injection
                      */
-                    String interfaceName = toBeanName(ic);
-                    beanTypeMap.put(interfaceName, ic);
-                    beanAliasMap.computeIfAbsent(interfaceName, k -> new HashSet<>());
-                    beanAliasMap.get(interfaceName).add(beanName);
-                }
-            }
-
-            // load dependencies of each bean recursively
-            for (String beanName : beanNameSet) {
-                resolveBeanRecursive(beanName);
-            }
-
-            for (BeanPostProcessor p : this.beanPostProcessors) {
-                for (Map.Entry<String, Object> bean : this.beanInstanceMap.entrySet()) {
-                    p.postProcessBean(bean.getValue(), bean.getKey());
-                }
+                String interfaceName = toBeanName(ic);
+                beanTypeMap.put(interfaceName, ic);
+                beanAliasMap.computeIfAbsent(interfaceName, k -> new HashSet<>());
+                beanAliasMap.get(interfaceName).add(beanName);
             }
         }
     }
 
+    /** Prepare the bean registry before starting any actual bean scanning, bean instantiation, and dependency injection */
     private void prepareBeanRegistry() {
         /*
         register itself as resolved dependency that can be later than be injected into other beans,
@@ -264,15 +295,60 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         this.registerSingletonBean(BeanRegistry.class, this);
     }
 
-    @Override
-    public void registerBeanPostProcessor(List<BeanPostProcessor> beanPostProcessorList) {
-        synchronized (getMutex()) {
-            this.beanPostProcessors.addAll(beanPostProcessorList);
+    /**
+     * Resolve dependencies between beans (in beanNameSet) recursively
+     * <p>
+     * The child nodes are resolved first, then the parent nodes. Eventually, there will be a child node that doesn't
+     * have any dependency, so we can just simply create it, and inject it into its 'parent' bean, this is essentially
+     * how it works.
+     * </p>
+     * <p>
+     * The dependencies between beans are just like trees (or, strictly speaking, a graph). A graph without circles
+     * (circular dependencies) is essentially a n-node tree.
+     * </p>
+     */
+    private void resolveDependencies() {
+        // load dependencies of each bean recursively
+        for (String beanName : beanNameSet) {
+            resolveBeanRecursively(beanName);
         }
     }
 
-    private void resolveBeanRecursive(String beanName) {
-        String implBeanName = findNameOfPossiblyBeanAlias(beanName);
+    private void applyPostProcessing() {
+        for (BeanPostProcessor p : this.beanPostProcessors) {
+            for (Map.Entry<String, Object> bean : this.beanInstanceMap.entrySet()) {
+                p.postProcessBean(bean.getValue(), bean.getKey());
+            }
+        }
+    }
+
+    @Override
+    public void registerBeanPostProcessor(List<BeanPostProcessor> beanPostProcessorList) {
+        Objects.requireNonNull(beanPostProcessorList);
+        if (!beanPostProcessorList.isEmpty()) {
+            synchronized (getMutex()) {
+                this.beanPostProcessors.addAll(beanPostProcessorList);
+            }
+        }
+    }
+
+    /**
+     * It does two things:
+     * <ul>
+     * <li>
+     * Populate beans
+     * </li>
+     * <li>
+     * Inject dependencies into beans
+     * </li>
+     * </ul>
+     *
+     * @param beanName name of bean, which can be an alias as well
+     */
+    private void resolveBeanRecursively(String beanName) {
+        Objects.requireNonNull(beanName);
+
+        String implBeanName = findNameOfPossibleBeanAlias(beanName);
 
         // bean has been resolved
         if (beanResolved.contains(implBeanName))
@@ -283,7 +359,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
         Map<String, List<PropertyInfo>> dependencies = beanDependencyParser.parseDependenciesOfClass(beanClz);
         for (String dependentAlias : dependencies.keySet()) {
-            String dependentImplBeanName = findNameOfPossiblyBeanAlias(dependentAlias);
+            String dependentImplBeanName = findNameOfPossibleBeanAlias(dependentAlias);
 
             // detect unresolvable dependency
             if (!beanNameSet.contains(dependentImplBeanName)) {
@@ -296,7 +372,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             // update dependency cache
             registerDependency(beanName, dependentAlias);
             // continue to resolve the dependent bean
-            resolveBeanRecursive(dependentAlias);
+            resolveBeanRecursively(dependentAlias);
         }
 
         /* start to inject the dependencies between beans:
@@ -313,7 +389,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
     }
 
-    private String findNameOfPossiblyBeanAlias(String beanAlias) {
+    /** Find actual implementation bean's name by a possible alias */
+    private String findNameOfPossibleBeanAlias(String beanAlias) {
+        Objects.requireNonNull(beanAlias);
+
         // first check if this beanName is actually an alias
         if (beanNameSet.contains(beanAlias)) {
             return beanAlias;
@@ -331,15 +410,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         return actualBeanNames.iterator().next();
     }
 
-    private Class<?> findTypeOfPossiblyBeanAlias(String beanAlias) {
-        if (beanAlias == null)
-            return null;
-        String beanName = findNameOfPossiblyBeanAlias(beanAlias);
-        if (beanName == null)
-            return null;
-        return beanTypeMap.get(beanName);
-    }
-
     /**
      * Inject dependencies into the target bean
      *
@@ -350,12 +420,13 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     private void injectDependencies(Object bean, String dependentBeanName, List<PropertyInfo> toBeInjectedProperties) {
         Objects.requireNonNull(bean, "Unable to inject dependencies, bean is null");
         Objects.requireNonNull(dependentBeanName, "Unable to inject dependencies, dependent bean's name is null");
+        Objects.requireNonNull(toBeInjectedProperties, "Unable to inject dependencies, properties list to be injected is null");
 
         if (toBeInjectedProperties == null || toBeInjectedProperties.isEmpty())
             return;
 
         // the actual implementation bean, the required type might be an interface, so we need to handle the casting
-        String dependentImplBeanName = findNameOfPossiblyBeanAlias(dependentBeanName);
+        String dependentImplBeanName = findNameOfPossibleBeanAlias(dependentBeanName);
         Object dependentImplBeanInstance = beanInstanceMap.get(dependentImplBeanName);
         Objects.requireNonNull(dependentImplBeanInstance, "Unable to find instance of bean: " + dependentImplBeanName);
 
@@ -374,6 +445,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
     }
 
+    /** Set {@link BeanClassScanner} to be used by the registry, should invoke this before {@link #loadBeanRegistry()} */
     void setBeanClassScanner(BeanClassScanner beanClassScanner) {
         Objects.requireNonNull(beanClassScanner);
         synchronized (getMutex()) {
@@ -381,6 +453,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
     }
 
+    /**
+     * Set {@link BeanDependencyParser} to be used by the registry, should invoke this before {@link
+     * #loadBeanRegistry()}
+     */
     void setBeanDependencyParser(BeanDependencyParser beanDependencyParser) {
         Objects.requireNonNull(beanDependencyParser);
         synchronized (getMutex()) {
