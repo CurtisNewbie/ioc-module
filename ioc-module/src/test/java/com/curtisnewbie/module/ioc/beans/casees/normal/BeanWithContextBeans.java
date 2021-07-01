@@ -1,4 +1,4 @@
-package com.curtisnewbie.module.ioc.demo;
+package com.curtisnewbie.module.ioc.beans.casees.normal;
 
 import com.curtisnewbie.module.ioc.annotations.Dependency;
 import com.curtisnewbie.module.ioc.annotations.MBean;
@@ -9,24 +9,13 @@ import com.curtisnewbie.module.ioc.context.BeanRegistry;
  * @author yongjie.zhuang
  */
 @MBean
-public class DummyBean implements HasName {
-
-    @Dependency
-    private MaskedTommy maskedTommy;
+public class BeanWithContextBeans {
 
     @Dependency
     private ApplicationContext applicationContext;
 
     @Dependency
     private BeanRegistry beanRegistry;
-
-    public MaskedTommy getMaskedTommy() {
-        return maskedTommy;
-    }
-
-    public void setMaskedTommy(MaskedTommy maskedTommy) {
-        this.maskedTommy = maskedTommy;
-    }
 
     public ApplicationContext getApplicationContext() {
         return applicationContext;
@@ -43,14 +32,4 @@ public class DummyBean implements HasName {
     public void setBeanRegistry(BeanRegistry beanRegistry) {
         this.beanRegistry = beanRegistry;
     }
-
-    @Override
-    public String toString() {
-        return "DummyBean{" +
-                "maskedTommy=" + maskedTommy +
-                ", applicationContext=" + applicationContext +
-                ", beanRegistry=" + beanRegistry +
-                '}';
-    }
-
 }

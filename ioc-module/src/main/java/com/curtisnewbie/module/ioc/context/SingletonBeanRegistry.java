@@ -4,6 +4,9 @@ import java.util.List;
 
 /**
  * Registry of singleton beans
+ * <p>
+ * Notice that, after the BeanRegistry being instantiated, the registry <b>should</b> be able to register singleton
+ * beans, even though the {@link #loadBeanRegistry()} hasn't been invoked
  *
  * @author yongjie.zhuang
  */
@@ -11,6 +14,9 @@ public interface SingletonBeanRegistry extends BeanRegistry {
 
     /**
      * Register a singleton bean with the name
+     * <p>
+     * Notice that, after the BeanRegistry being instantiated, the registry <b>should</b> be able to register singleton
+     * beans, even though the {@link #loadBeanRegistry()} hasn't been invoked
      *
      * @param beanName name of the bean
      * @param bean     the instance/bean
@@ -19,6 +25,9 @@ public interface SingletonBeanRegistry extends BeanRegistry {
 
     /**
      * Register a singleton bean with the class
+     * <p>
+     * Notice that, after the BeanRegistry being instantiated, the registry <b>should</b> be able to register singleton
+     * beans, even though the {@link #loadBeanRegistry()} hasn't been invoked
      *
      * @param clazz class of the bean
      * @param bean  the instance/bean
@@ -38,9 +47,10 @@ public interface SingletonBeanRegistry extends BeanRegistry {
      */
     boolean isDependent(String beanName, String dependentBeanName);
 
-
     /**
-     * Load the bean registry, this method is expected to be ran in a single thread
+     * Load the bean registry
+     * <p>
+     * Which includes scanning beans' classes, instantiating beans and injecting their dependencies
      */
     void loadBeanRegistry();
 

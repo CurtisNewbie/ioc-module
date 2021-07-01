@@ -5,10 +5,7 @@ import com.curtisnewbie.module.ioc.beans.casees.invalid.BeanWithNotAccessibleFie
 import com.curtisnewbie.module.ioc.beans.casees.invalid.BeanWithNotSupportedProperties;
 import com.curtisnewbie.module.ioc.beans.casees.invalid.EmptyBean;
 import com.curtisnewbie.module.ioc.beans.casees.invalid.InterfaceWithMBean;
-import com.curtisnewbie.module.ioc.beans.casees.normal.AuthenticationManager;
-import com.curtisnewbie.module.ioc.beans.casees.normal.Service;
-import com.curtisnewbie.module.ioc.beans.casees.normal.ServiceAggregator;
-import com.curtisnewbie.module.ioc.beans.casees.normal.UserServiceImpl;
+import com.curtisnewbie.module.ioc.beans.casees.normal.*;
 import com.curtisnewbie.module.ioc.exceptions.CircularDependencyException;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
 import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
@@ -91,6 +88,23 @@ public class BeanRegistryTest {
         }, "Should detect indirect/transitive circular dependency, might have a bug");
 
         logger.info("Test: beans with transitive/indirect circular dependencies -- passed");
+    }
+
+    @Test
+    public void shouldInjectContextRelatedBeans() {
+        ContextInitializer contextInitializer = ContextFactory.getContextInitializer();
+        setupMockScanner(contextInitializer,
+                BeanWithContextBeans.class);
+
+        ApplicationContext applicationContext = contextInitializer.initialize(BeanRegistryTest.class);
+        BeanRegistry registry = applicationContext.getBeanRegistry();
+
+        BeanWithContextBeans beanWithContextBeans = registry.getBeanByClass(BeanWithContextBeans.class);
+        Assertions.assertNotNull(beanWithContextBeans, "Bean not found after initialisation, might have a bug");
+        Assertions.assertNotNull(beanWithContextBeans.getApplicationContext(), "Didn't inject ApplicationContext, might have a bug");
+        Assertions.assertNotNull(beanWithContextBeans.getBeanRegistry(), "Didn't inject BeanRegistry, might have a bug");
+
+        logger.info("Test: inject context-related beans (e.g., ApplicationContext) -- passed");
     }
 
     @Test

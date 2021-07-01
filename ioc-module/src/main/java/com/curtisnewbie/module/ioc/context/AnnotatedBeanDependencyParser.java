@@ -27,7 +27,7 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
         try {
             BeanInfo beanInfo = Introspector.getBeanInfo(clz);
             PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
-            pdMap = propertyDescriptorToMap(propertyDescriptors);
+            pdMap = propertyDescriptorsToMap(propertyDescriptors);
         } catch (IntrospectionException e) {
             throw new IllegalStateException("Unable to introspect " + clz, e);
         }
@@ -37,27 +37,29 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
             // the field has a @Dependency annotation & it contains a writer method
             if (f.isAnnotationPresent(Dependency.class)) {
                 PropertyDescriptor pd = pdMap.get(f.getName());
-                if (pd == null) {
-                    throw new UnableToInjectDependencyException("Cannot find PropertyDescriptor for " + clz.toString() +
-                            " : " + f.getName() + ", please make sure the field is accessible");
+                // if pd == null, means there is not getter and setter for this field at all
+                // as long as the writerMethod is missing, this field is not injectable
+                if (pd == null || pd.getWriteMethod() == null) {
+                    throw new UnableToInjectDependencyException(
+                            String.format("Unable to inject dependency, field: '%s' not accessible, setter method is missing",
+                                    f.getName())
+                    );
                 }
-                if (pd.getWriteMethod() != null) {
-                    Class<?> propType = pd.getPropertyType();
-                    if (isBoxedPrimitiveType(propType)) {
-                        throw new TypeNotSupportedForInjectionException(
-                                "Basic/Primitive types are not supported for dependency injection, " +
-                                        "field: " + f.getName());
-                    }
-                    if (isCollections(propType)) {
-                        throw new TypeNotSupportedForInjectionException(
-                                "Collections are not supported for dependency injection, " +
-                                        "field: " + f.getName());
-                    }
-                    String dependentBeanName = BeanNameUtil.toBeanName(propType);
-                    // key: dependent's type, value: list of propertyInfo of this dependency type
-                    dependencies.computeIfAbsent(dependentBeanName, k -> new ArrayList<>());
-                    dependencies.get(dependentBeanName).add(new PropertyInfo(f.getName(), pd, propType));
+                Class<?> propType = pd.getPropertyType();
+                if (isBoxedPrimitiveType(propType)) {
+                    throw new TypeNotSupportedForInjectionException(
+                            "Basic/Primitive types are not supported for dependency injection, " +
+                                    "field: " + f.getName());
                 }
+                if (isCollections(propType)) {
+                    throw new TypeNotSupportedForInjectionException(
+                            "Collections are not supported for dependency injection, " +
+                                    "field: " + f.getName());
+                }
+                String dependentBeanName = BeanNameUtil.toBeanName(propType);
+                // key: dependent's type, value: list of propertyInfo of this dependency type
+                dependencies.computeIfAbsent(dependentBeanName, k -> new ArrayList<>());
+                dependencies.get(dependentBeanName).add(new PropertyInfo(f.getName(), pd, propType));
             }
         }
         return dependencies;
@@ -110,7 +112,7 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
      * Load array of PropertyDescriptor to map, where the key is the property name, and the value is the
      * PropertyDescriptor
      */
-    private Map<String, PropertyDescriptor> propertyDescriptorToMap(PropertyDescriptor[] pds) {
+    private Map<String, PropertyDescriptor> propertyDescriptorsToMap(PropertyDescriptor[] pds) {
         Map<String, PropertyDescriptor> pdMap = new HashMap<>();
         for (PropertyDescriptor pd : pds) {
             pdMap.put(pd.getName(), pd);

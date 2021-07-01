@@ -101,6 +101,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             if (beanInstanceMap.get(beanName) != null) {
                 throw new SingletonBeanRegisteredException(beanName);
             }
+            beanResolved.add(beanName);
             beanInstanceMap.put(beanName, bean);
             beanNameSet.add(beanName);
         }
@@ -178,6 +179,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     @Override
     public void loadBeanRegistry() {
 
+        // TODO: 01/07/2021 how to inject the context-related beans in an extensible way
+
         synchronized (getMutex()) {
 
             // can only be initialised once
@@ -187,6 +190,9 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
             // set the classloader to use
             beanClzScanner.setClassLoader(classLoader);
+
+            // prepare the registry before starting to populate beans and inject dependencies
+            prepareBeanRegistry();
 
             // set of classes of beans that will be managed by this context
             Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses();
@@ -252,6 +258,14 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
     }
 
+    private void prepareBeanRegistry() {
+        /*
+        register itself as resolved dependency that can be later than be injected into other beans,
+        but only the BeanRegistry interface can be used for dependency injection
+         */
+        this.registerSingletonBean(BeanRegistry.class, this);
+    }
+
     @Override
     public void registerBeanPostProcessor(List<BeanPostProcessor> beanPostProcessorList) {
         synchronized (getMutex()) {
@@ -271,11 +285,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
         Map<String, List<PropertyInfo>> dependencies = beanDependencyParser.parseDependenciesOfClass(beanClz);
         for (String dependentAlias : dependencies.keySet()) {
-            Class<?> dependentClz = findTypeOfPossiblyBeanAlias(dependentAlias);
-            if (dependentClz == null)
-                throw new UnsatisfiedDependencyException("Detected unresolvable dependency: " + dependentAlias);
-
-            String dependentImplBeanName = toBeanName(dependentClz);
+            String dependentImplBeanName = findNameOfPossiblyBeanAlias(dependentAlias);
 
             // detect unresolvable dependency
             if (!beanNameSet.contains(dependentImplBeanName)) {
@@ -303,7 +313,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         for (Map.Entry<String, List<PropertyInfo>> dependent : dependencies.entrySet()) {
             injectDependencies(bean, dependent.getKey(), dependent.getValue());
         }
-        beanResolved.add(implBeanName);
     }
 
     private String findNameOfPossiblyBeanAlias(String beanAlias) {
