@@ -1,7 +1,7 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.context.processing.BeanPostProcessor;
-import com.curtisnewbie.module.ioc.context.processing.ContextAwareBeanPostProcessor;
+import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
+import com.curtisnewbie.module.ioc.processing.ContextAwareBeanPostProcessor;
 
 import java.util.Arrays;
 import java.util.List;

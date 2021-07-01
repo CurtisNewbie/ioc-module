@@ -1,4 +1,4 @@
-package com.curtisnewbie.module.ioc.context.aware;
+package com.curtisnewbie.module.ioc.aware;
 
 import com.curtisnewbie.module.ioc.context.ApplicationContext;
 

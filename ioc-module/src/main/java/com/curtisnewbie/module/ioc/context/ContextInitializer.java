@@ -1,6 +1,6 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.context.processing.BeanPostProcessor;
+import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
 
 /**
  * Initializer of the context

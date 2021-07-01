@@ -1,7 +1,8 @@
-package com.curtisnewbie.module.ioc.context.processing;
+package com.curtisnewbie.module.ioc.processing;
 
 import com.curtisnewbie.module.ioc.annotations.Dependency;
-import com.curtisnewbie.module.ioc.context.PropertyInfo;
+import com.curtisnewbie.module.ioc.beans.BeanPropertyInfo;
+import com.curtisnewbie.module.ioc.beans.BeanPropertyWriteMethodHandler;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
 import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
 import com.curtisnewbie.module.ioc.util.BeanNameUtil;
@@ -21,9 +22,9 @@ import java.util.*;
 public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
 
     @Override
-    public Map<String, List<PropertyInfo>> parseDependenciesOfClass(Class<?> clz) {
+    public Map<String, List<BeanPropertyInfo>> parseDependenciesOfClass(Class<?> clz) {
         Objects.requireNonNull(clz, "class is null, unable to parse dependencies");
-        Map<String, List<PropertyInfo>> dependencies = new HashMap<>();
+        Map<String, List<BeanPropertyInfo>> dependencies = new HashMap<>();
         Map<String, PropertyDescriptor> pdMap;
         try {
             BeanInfo beanInfo = Introspector.getBeanInfo(clz);
@@ -60,7 +61,7 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
                 String dependentBeanName = BeanNameUtil.toBeanName(propType);
                 // key: dependent's type, value: list of propertyInfo of this dependency type
                 dependencies.computeIfAbsent(dependentBeanName, k -> new ArrayList<>());
-                dependencies.get(dependentBeanName).add(new PropertyInfo(f.getName(), pd));
+                dependencies.get(dependentBeanName).add(new BeanPropertyWriteMethodHandler(f.getName(), pd));
             }
         }
         return dependencies;

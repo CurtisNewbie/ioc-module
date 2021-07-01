@@ -1,7 +1,8 @@
 package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.annotations.MBean;
-import com.curtisnewbie.module.ioc.context.processing.*;
+import com.curtisnewbie.module.ioc.beans.BeanPropertyInfo;
+import com.curtisnewbie.module.ioc.processing.*;
 import com.curtisnewbie.module.ioc.exceptions.*;
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
 import com.curtisnewbie.module.ioc.util.LogUtil;
@@ -372,7 +373,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         Class<?> beanClz = beanTypeMap.get(implBeanName);
         Objects.requireNonNull(beanClz, "Unable to find class of bean: " + beanName);
 
-        Map<String, List<PropertyInfo>> dependencies = beanDependencyParser.parseDependenciesOfClass(beanClz);
+        Map<String, List<BeanPropertyInfo>> dependencies = beanDependencyParser.parseDependenciesOfClass(beanClz);
         for (String dependentAlias : dependencies.keySet()) {
             String dependentImplBeanName = findNameOfPossibleBeanAlias(dependentAlias);
 
@@ -399,7 +400,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         registerSingletonBean(implBeanName, bean);
 
         // inject dependencies
-        for (Map.Entry<String, List<PropertyInfo>> dependent : dependencies.entrySet()) {
+        for (Map.Entry<String, List<BeanPropertyInfo>> dependent : dependencies.entrySet()) {
             injectDependencies(bean, dependent.getKey(), dependent.getValue());
         }
     }
@@ -432,7 +433,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      * @param dependentBeanName      dependent bean's name (which might be an alias)
      * @param toBeInjectedProperties the properties info of this bean that require dependency injection
      */
-    private void injectDependencies(Object bean, String dependentBeanName, List<PropertyInfo> toBeInjectedProperties) {
+    private void injectDependencies(Object bean, String dependentBeanName, List<BeanPropertyInfo> toBeInjectedProperties) {
         Objects.requireNonNull(bean, "Unable to inject dependencies, bean is null");
         Objects.requireNonNull(dependentBeanName, "Unable to inject dependencies, dependent bean's name is null");
         Objects.requireNonNull(toBeInjectedProperties, "Unable to inject dependencies, properties list to be injected is null");
@@ -445,14 +446,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         Object dependentImplBeanInstance = beanInstanceMap.get(dependentImplBeanName);
         Objects.requireNonNull(dependentImplBeanInstance, "Unable to find instance of bean: " + dependentImplBeanName);
 
-        for (PropertyInfo prop : toBeInjectedProperties) {
-            if (prop.isPropertyTypeAssignableFrom(dependentImplBeanInstance.getClass())) {
-                try {
-                    // inject the dependent bean into the field
-                    prop.writeValueToPropertyOfBean(bean, dependentImplBeanInstance);
-                } catch (ReflectiveOperationException e) {
-                    throw new UnableToInjectDependencyException("Unable to inject dependency in field: " + prop.getPropertyName());
-                }
+        for (BeanPropertyInfo prop : toBeInjectedProperties) {
+            if (prop.canSatisfyRequiredType(dependentImplBeanInstance.getClass())) {
+                // inject the dependent bean into the field
+                prop.setValueToPropertyOfBean(bean, dependentImplBeanInstance);
             }
         }
     }

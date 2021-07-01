@@ -1,4 +1,4 @@
-package com.curtisnewbie.module.ioc.context.processing;
+package com.curtisnewbie.module.ioc.processing;
 
 import java.util.Set;
 
