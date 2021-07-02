@@ -165,12 +165,18 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     @Override
     public boolean isBeanResolved(String beanName) {
         String implBeanName = findNameOfPossibleBeanAlias(beanName);
+        if (implBeanName == null)
+            return false;
         return beanResolved.contains(implBeanName);
     }
 
     @Override
     public void markBeanAsResolved(String beanName) {
         String implBeanName = findNameOfPossibleBeanAlias(beanName);
+        if (implBeanName == null) {
+            throw new IllegalArgumentException(
+                    format("Bean: '%s' not registered, cannot be marked as resolved", beanName));
+        }
         if (!beanResolved.add(implBeanName)) {
             // ensure bugs are discovered as early as possible
             throw new IllegalArgumentException(
@@ -217,7 +223,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     @Override
     public boolean containsBean(Class<?> clazz) {
         Objects.requireNonNull(clazz);
-        return beanInstanceMap.containsKey(findNameOfPossibleBeanAlias(toBeanName(clazz)));
+        String beanName = findNameOfPossibleBeanAlias(toBeanName(clazz));
+        if (beanName == null)
+            return false;
+        return beanInstanceMap.containsKey(beanName);
     }
 
     @Override
@@ -226,9 +235,13 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         return clazz.cast(getBeanByName(toBeanName(clazz)));
     }
 
+    @Override
     public Object getBeanByName(String beanName) {
         Objects.requireNonNull(beanName);
-        return beanInstanceMap.get(findNameOfPossibleBeanAlias(beanName));
+        String implBeanName = findNameOfPossibleBeanAlias(beanName);
+        if (implBeanName == null)
+            return null;
+        return beanInstanceMap.get(implBeanName);
     }
 
     @Override
@@ -371,6 +384,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      */
     private void instantiateUnresolvedBeanEagerly(String beanName) {
         String implBeanName = findNameOfPossibleBeanAlias(beanName);
+        Objects.requireNonNull(implBeanName,
+                format("Bean: '%s' not registered, cannot be instantiated", beanName));
         if (!beanResolved.contains(implBeanName)) {
             Object bean = beanInstantiationStrategy.instantiateBean(beanTypeMap.get(implBeanName));
             // register an eagerly created bean, wherein the dependencies are not resolved
@@ -429,6 +444,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         Map<String, List<BeanPropertyInfo>> dependencies = beanDependencyParser.parseDependenciesOfClass(beanClz);
         for (String dependentAlias : dependencies.keySet()) {
             String dependentImplBeanName = findNameOfPossibleBeanAlias(dependentAlias);
+            Objects.requireNonNull(dependentImplBeanName,
+                    format("Dependent Bean: '%s' not found", dependentImplBeanName));
 
             // detect unresolvable dependency
             if (!beanInstanceMap.containsKey(dependentImplBeanName)) {
