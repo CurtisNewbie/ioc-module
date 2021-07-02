@@ -275,6 +275,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             // and the post processing is applied after all managed beans' instantiation
             applyPostProcessing();
             info(logger, "Beans post processing applied");
+
+
         }
     }
 
@@ -398,6 +400,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     }
 
     // TODO: 02/07/2021 Move this part to post processors
+
     /**
      * Resolve dependencies between beans (in beanNameSet) recursively
      * <p>
@@ -446,6 +449,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             injectDependencies(bean, dependent.getKey(), dependent.getValue());
         }
 
+        // TODO: 02/07/2021 if we use postProcessors for extensibility, and there are multiple postProcessors that
+        //  inject dependencies for different annotations, how do we know which bean is actually resolved? Since we are
+        //  traversing a graph, how do we prevent parsing the dependency tree of a previous traversed bean again and again.
+        //  The 'mark been as resolved' idea doesn't seem right :(.
         // mark the bean as resolved
         markBeanAsResolved(beanName);
     }
@@ -471,6 +478,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         return actualBeanNames.iterator().next();
     }
 
+    // TODO: 02/07/2021 Move this part to post processors
+
     /**
      * Inject dependencies into the target bean
      *
@@ -487,9 +496,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             return;
 
         // the actual implementation bean, the required type might be an interface, so we need to handle the casting
-        String dependentImplBeanName = findNameOfPossibleBeanAlias(dependentBeanName);
-        Object dependentImplBeanInstance = beanInstanceMap.get(dependentImplBeanName);
-        Objects.requireNonNull(dependentImplBeanInstance, "Unable to find instance of bean: " + dependentImplBeanName);
+        Object dependentImplBeanInstance = getBeanByName(dependentBeanName);
+        Objects.requireNonNull(dependentImplBeanInstance, "Unable to find instance of bean: " + dependentBeanName);
 
         for (BeanPropertyInfo prop : toBeInjectedProperties) {
             if (prop.canSatisfyRequiredType(dependentImplBeanInstance.getClass())) {
