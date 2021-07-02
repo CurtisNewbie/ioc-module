@@ -23,7 +23,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         this.beanDependencyParser = new AnnotatedBeanDependencyParser();
         // this order matters
         this.beanPostProcessorList = Arrays.asList(
-                new DependencyAnnotationBeanPostProcessor(singletonBeanRegistry, beanDependencyParser),
+                new DependencyInjectionBeanPostProcessor(singletonBeanRegistry, beanDependencyParser),
                 new ContextAwareBeanPostProcessor(this)
         );
     }

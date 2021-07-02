@@ -11,6 +11,15 @@ package com.curtisnewbie.module.ioc.context;
 public interface SingletonBeanRegistry extends ConfigurableBeanRegistry {
 
     /**
+     * Get bean's name by possibly alias
+     *
+     * @param beanNameOrAlias bean name or its alias
+     * @return bean's name
+     * @see #containsBean(String)
+     */
+    String getBeanName(String beanNameOrAlias);
+
+    /**
      * Register a singleton bean with the name
      * <p>
      * Notice that, after the BeanRegistry being instantiated, the registry <b>should</b> be able to register singleton
@@ -49,21 +58,6 @@ public interface SingletonBeanRegistry extends ConfigurableBeanRegistry {
      * @param dependentBeanName the bean that might be dependent on
      */
     boolean isDependent(String beanName, String dependentBeanName);
-
-    /**
-     * Check if the bean is resolved (instantiated and dependencies injected)
-     *
-     * @param beanName bean name
-     */
-    boolean isBeanResolved(String beanName);
-
-    /**
-     * Mark the bean as resolved (instantiated and dependencies injected)
-     *
-     * @param beanName bean name
-     * @see #isBeanResolved(String)
-     */
-    void markBeanAsResolved(String beanName);
 
     /**
      * Load the bean registry

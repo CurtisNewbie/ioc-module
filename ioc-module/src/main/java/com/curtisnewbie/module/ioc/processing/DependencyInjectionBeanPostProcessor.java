@@ -6,23 +6,26 @@ import com.curtisnewbie.module.ioc.context.SingletonBeanRegistry;
 import com.curtisnewbie.module.ioc.exceptions.CircularDependencyException;
 import com.curtisnewbie.module.ioc.exceptions.UnsatisfiedDependencyException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static java.lang.String.format;
 
 /**
- * Post processor for handling {@link com.curtisnewbie.module.ioc.annotations.Dependency} annotation
+ * Post processor for injecting dependencies
  *
  * @author yongjie.zhuang
  */
-public class DependencyAnnotationBeanPostProcessor implements BeanPostProcessor {
+public class DependencyInjectionBeanPostProcessor implements BeanPostProcessor {
 
     private SingletonBeanRegistry singletonBeanRegistry;
     private BeanDependencyParser beanDependencyParser;
+    private Set<String> beanResolved = new HashSet<>();
 
-    public DependencyAnnotationBeanPostProcessor(SingletonBeanRegistry singletonBeanRegistry,
-                                                 BeanDependencyParser beanDependencyParser) {
+    public DependencyInjectionBeanPostProcessor(SingletonBeanRegistry singletonBeanRegistry,
+                                                BeanDependencyParser beanDependencyParser) {
         this.singletonBeanRegistry = singletonBeanRegistry;
         this.beanDependencyParser = beanDependencyParser;
     }
@@ -50,7 +53,7 @@ public class DependencyAnnotationBeanPostProcessor implements BeanPostProcessor 
         Objects.requireNonNull(beanName);
 
         // bean has been resolved
-        if (singletonBeanRegistry.isBeanResolved(beanName))
+        if (beanResolved.contains(singletonBeanRegistry.getBeanName(beanName)))
             return;
 
         Class<?> beanClz = bean.getClass();
@@ -89,12 +92,8 @@ public class DependencyAnnotationBeanPostProcessor implements BeanPostProcessor 
             injectDependentBean(bean, dependent);
         }
 
-        // TODO: 02/07/2021 if we use postProcessors for extensibility, and there are multiple postProcessors that
-        //  inject dependencies for different annotations, how do we know which bean is actually resolved? Since we are
-        //  traversing a graph, how do we prevent parsing the dependency tree of a previous traversed bean again and again.
-        //  The 'mark been as resolved' idea doesn't seem right :(.
         // mark the bean as resolved
-        singletonBeanRegistry.markBeanAsResolved(beanName);
+        beanResolved.add(singletonBeanRegistry.getBeanName(beanName));
     }
 
 

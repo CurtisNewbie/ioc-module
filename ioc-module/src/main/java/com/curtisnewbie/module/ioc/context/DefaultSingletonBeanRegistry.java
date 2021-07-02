@@ -74,9 +74,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      */
     private final Map<String, Set<String>> beanAliasMap = new ConcurrentHashMap<>();
 
-    /** Set of bean's name; where in the bean is resolved already, including its dependencies */
-    private final Set<String> beanResolved = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
     /** mutex lock */
     private final Object mutex = new Object();
 
@@ -98,6 +95,12 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     }
 
     @Override
+    public String getBeanName(String beanNameOrAlias) {
+        String implBean = findNameOfPossibleBeanAlias(beanNameOrAlias);
+        return implBean;
+    }
+
+    @Override
     public void registerSingletonBean(String beanName, Object bean) {
         Objects.requireNonNull(beanName);
         Objects.requireNonNull(bean);
@@ -106,7 +109,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             if (beanInstanceMap.get(beanName) != null) {
                 throw new SingletonBeanRegisteredException(beanName);
             }
-            beanResolved.add(beanName);
             beanInstanceMap.put(beanName, bean);
             beanNameSet.add(beanName);
         }
@@ -154,29 +156,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
         synchronized (this.dependenciesMap) {
             return this.checkIsDependentRecursively(beanName, dependentBeanName, new HashSet<>());
-        }
-    }
-
-    @Override
-    public boolean isBeanResolved(String beanName) {
-        String implBeanName = findNameOfPossibleBeanAlias(beanName);
-        if (implBeanName == null)
-            return false;
-        return beanResolved.contains(implBeanName);
-    }
-
-    @Override
-    public void markBeanAsResolved(String beanName) {
-        String implBeanName = findNameOfPossibleBeanAlias(beanName);
-        if (implBeanName == null) {
-            throw new IllegalArgumentException(
-                    format("Bean: '%s' not registered, cannot be marked as resolved", beanName));
-        }
-        if (!beanResolved.add(implBeanName)) {
-            // ensure bugs are discovered as early as possible
-            throw new IllegalArgumentException(
-                    format("Bean: '%s' has been resolved already, cannot be marked again", beanName)
-            );
         }
     }
 
@@ -359,7 +338,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         String implBeanName = findNameOfPossibleBeanAlias(beanName);
         Objects.requireNonNull(implBeanName,
                 format("Bean: '%s' not registered, cannot be instantiated", beanName));
-        if (!beanResolved.contains(implBeanName)) {
+        if (!beanInstanceMap.containsKey(implBeanName)) {
             Object bean = beanInstantiationStrategy.instantiateBean(beanTypeMap.get(implBeanName));
             // register an eagerly created bean, wherein the dependencies are not resolved
             registerEagerlyCreatedSingletonBean(implBeanName, bean);
