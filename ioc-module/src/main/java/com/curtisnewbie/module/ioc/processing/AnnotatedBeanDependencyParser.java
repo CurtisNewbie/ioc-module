@@ -3,13 +3,13 @@ package com.curtisnewbie.module.ioc.processing;
 import com.curtisnewbie.module.ioc.annotations.Dependency;
 import com.curtisnewbie.module.ioc.beans.BeanPropertyInfo;
 import com.curtisnewbie.module.ioc.beans.BeanPropertyWriteMethodHandler;
+import com.curtisnewbie.module.ioc.beans.DefaultDependentBeanInfo;
+import com.curtisnewbie.module.ioc.beans.DependentBeanInfo;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
 import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
 import com.curtisnewbie.module.ioc.util.BeanNameUtil;
+import com.curtisnewbie.module.ioc.util.BeansUtil;
 
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.*;
@@ -25,14 +25,7 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
     public Map<String, List<BeanPropertyInfo>> parseDependenciesOfClass(Class<?> clz) {
         Objects.requireNonNull(clz, "class is null, unable to parse dependencies");
         Map<String, List<BeanPropertyInfo>> dependencies = new HashMap<>();
-        Map<String, PropertyDescriptor> pdMap;
-        try {
-            BeanInfo beanInfo = Introspector.getBeanInfo(clz);
-            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
-            pdMap = propertyDescriptorsToMap(propertyDescriptors);
-        } catch (IntrospectionException e) {
-            throw new IllegalStateException("Unable to introspect " + clz, e);
-        }
+        Map<String, PropertyDescriptor> pdMap = propertyDescriptorsToMap(BeansUtil.introspectPropertyDescriptors(clz));
 
         Field[] fields = clz.getDeclaredFields();
         for (Field f : fields) {
@@ -65,6 +58,16 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
             }
         }
         return dependencies;
+    }
+
+    @Override
+    public List<DependentBeanInfo> parseDependencies(Class<?> beanClazz) {
+        Map<String, List<BeanPropertyInfo>> dependencyInfo = parseDependenciesOfClass(beanClazz);
+        List<DependentBeanInfo> dependentBeanInfos = new ArrayList<>();
+        for (Map.Entry<String, List<BeanPropertyInfo>> entry : dependencyInfo.entrySet()) {
+            dependentBeanInfos.add(new DefaultDependentBeanInfo(entry.getKey(), entry.getValue()));
+        }
+        return dependentBeanInfos;
     }
 
     /**

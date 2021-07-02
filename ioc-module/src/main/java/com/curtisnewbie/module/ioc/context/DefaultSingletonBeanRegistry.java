@@ -2,6 +2,7 @@ package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.annotations.MBean;
 import com.curtisnewbie.module.ioc.beans.BeanPropertyInfo;
+import com.curtisnewbie.module.ioc.beans.DependentBeanInfo;
 import com.curtisnewbie.module.ioc.processing.*;
 import com.curtisnewbie.module.ioc.exceptions.*;
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
@@ -441,8 +442,15 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                 beanName));
 
         Class<?> beanClz = bean.getClass();
-        Map<String, List<BeanPropertyInfo>> dependencies = beanDependencyParser.parseDependenciesOfClass(beanClz);
-        for (String dependentAlias : dependencies.keySet()) {
+
+        /*
+        get list of dependent beans of this bean, and the properties each dependent will be injected into,
+        E.g., if current bean is Bean A, Bean A requires Bean B at field fieldOne.
+         Then the Bean B and field fieldOne together will become a single DependentBeanInfo
+         */
+        List<DependentBeanInfo> dependentBeans = beanDependencyParser.parseDependencies(beanClz);
+        for (DependentBeanInfo dependent : dependentBeans) {
+            String dependentAlias = dependent.getDependentBeanName();
             String dependentImplBeanName = findNameOfPossibleBeanAlias(dependentAlias);
             Objects.requireNonNull(dependentImplBeanName,
                     format("Dependent Bean: '%s' not found", dependentImplBeanName));
@@ -462,8 +470,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
 
         // inject dependencies
-        for (Map.Entry<String, List<BeanPropertyInfo>> dependent : dependencies.entrySet()) {
-            injectDependencies(bean, dependent.getKey(), dependent.getValue());
+        for (DependentBeanInfo dependent : dependentBeans) {
+            injectDependentBean(bean, dependent);
         }
 
         // TODO: 02/07/2021 if we use postProcessors for extensibility, and there are multiple postProcessors that
@@ -498,14 +506,21 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     // TODO: 02/07/2021 Move this part to post processors
 
     /**
-     * Inject dependencies into the target bean
+     * Inject a dependent bean into the target bean
      *
-     * @param bean                   bean
-     * @param dependentBeanName      dependent bean's name (which might be an alias)
-     * @param toBeInjectedProperties the properties info of this bean that require dependency injection
+     * @param bean              bean
+     * @param dependentBeanInfo info of a dependent bean
      */
-    private void injectDependencies(Object bean, String dependentBeanName, List<BeanPropertyInfo> toBeInjectedProperties) {
+    private void injectDependentBean(Object bean, DependentBeanInfo dependentBeanInfo) {
         Objects.requireNonNull(bean, "Unable to inject dependencies, bean is null");
+        Objects.requireNonNull(dependentBeanInfo, "Unable to inject dependencies, dependent bean info is null");
+
+        // dependent bean's name (which might be an alias)
+        String dependentBeanName = dependentBeanInfo.getDependentBeanName();
+
+        // the properties info of this bean that require dependency injection
+        List<BeanPropertyInfo> toBeInjectedProperties = dependentBeanInfo.getBeanPropertiesToInject();
+
         Objects.requireNonNull(dependentBeanName, "Unable to inject dependencies, dependent bean's name is null");
         Objects.requireNonNull(toBeInjectedProperties, "Unable to inject dependencies, properties list to be injected is null");
 

@@ -2,6 +2,7 @@ package com.curtisnewbie.module.ioc.processing;
 
 
 import com.curtisnewbie.module.ioc.beans.BeanPropertyInfo;
+import com.curtisnewbie.module.ioc.beans.DependentBeanInfo;
 
 import java.util.List;
 import java.util.Map;
@@ -21,4 +22,12 @@ public interface BeanDependencyParser {
      * name, and value is a list of {@link BeanPropertyInfo} of this type that needs to be resolved
      */
     Map<String, List<BeanPropertyInfo>> parseDependenciesOfClass(Class<?> clazz);
+
+    /**
+     * Parse dependencies of the class
+     *
+     * @param beanClazz bean's class
+     * @return dependent beans' info
+     */
+    List<DependentBeanInfo> parseDependencies(Class<?> beanClazz);
 }
