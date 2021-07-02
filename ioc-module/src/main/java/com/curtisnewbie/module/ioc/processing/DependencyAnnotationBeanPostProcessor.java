@@ -28,7 +28,7 @@ public class DependencyAnnotationBeanPostProcessor implements BeanPostProcessor 
     }
 
     @Override
-    public Object postProcessBean(Object bean, String beanName) {
+    public Object postProcessBeanAfterInstantiation(Object bean, String beanName) {
         resolveDependenciesRecursively(bean, beanName);
         return bean;
     }

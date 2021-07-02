@@ -17,7 +17,7 @@ public class ContextAwareBeanPostProcessor implements BeanPostProcessor {
     }
 
     @Override
-    public Object postProcessBean(Object bean, String beanName) {
+    public Object postProcessBeanAfterInstantiation(Object bean, String beanName) {
         if (bean instanceof ApplicationContextAware) {
             ((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
         }
