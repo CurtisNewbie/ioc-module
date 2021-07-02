@@ -8,7 +8,7 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 
 /**
- * Implementation of {@link com.curtisnewbie.module.ioc.beans.BeanPropertyInfo} using PropertyDescriptor and
+ * Default implementation of {@link com.curtisnewbie.module.ioc.beans.BeanPropertyInfo} using PropertyDescriptor and
  * writeMethod
  * <p>
  * It uses property's type (via {@link Class#isAssignableFrom(Class)}) to determine whether the given type can satisfy
@@ -17,7 +17,7 @@ import java.util.Objects;
  *
  * @author yongjie.zhuang
  */
-public class BeanPropertyWriteMethodHandler implements BeanPropertyInfo {
+public class DefaultBeanPropertyInfo implements BeanPropertyInfo {
 
     /**
      * Name of the field/property
@@ -29,7 +29,7 @@ public class BeanPropertyWriteMethodHandler implements BeanPropertyInfo {
      */
     private final PropertyDescriptor propertyDescriptor;
 
-    public BeanPropertyWriteMethodHandler(String propertyName, PropertyDescriptor propertyDescriptor) {
+    public DefaultBeanPropertyInfo(String propertyName, PropertyDescriptor propertyDescriptor) {
         Objects.requireNonNull(propertyName);
         Objects.requireNonNull(propertyDescriptor);
 
@@ -48,13 +48,6 @@ public class BeanPropertyWriteMethodHandler implements BeanPropertyInfo {
 
     @Override
     public boolean canSatisfyRequiredType(Class<?> type) {
-        return isPropertyTypeAssignableFrom(type);
-    }
-
-    /**
-     * Check whether this property's type is assignable from the given type
-     */
-    private boolean isPropertyTypeAssignableFrom(Class<?> type) {
         return this.propertyDescriptor.getPropertyType().isAssignableFrom(type);
     }
 

@@ -3,7 +3,7 @@ package com.curtisnewbie.module.ioc.beans;
 import java.util.List;
 
 /**
- * Information of a dependent Bean and where (which properties) it needs to be injected into
+ * Information of a dependent Bean and where (which properties/fields) it will be injected into
  *
  * @author yongjie.zhuang
  */
