@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 import static com.curtisnewbie.module.ioc.util.BeanNameUtil.toBeanName;
 import static com.curtisnewbie.module.ioc.util.LogUtil.info;
+import static java.lang.String.format;
 
 /**
  * Implementation of {@link SingletonBeanRegistry}
@@ -111,6 +112,20 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                 throw new SingletonBeanRegisteredException(beanName);
             }
             beanResolved.add(beanName);
+            beanInstanceMap.put(beanName, bean);
+            beanNameSet.add(beanName);
+        }
+    }
+
+    /** Register eagerly created singleton bean, whose dependencies are not yet resolved */
+    private void registerEagerlyCreatedSingletonBean(String beanName, Object bean) {
+        Objects.requireNonNull(beanName);
+        Objects.requireNonNull(bean);
+
+        synchronized (getMutex()) {
+            if (beanInstanceMap.get(beanName) != null) {
+                throw new SingletonBeanRegisteredException(beanName);
+            }
             beanInstanceMap.put(beanName, bean);
             beanNameSet.add(beanName);
         }
@@ -226,7 +241,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             info(logger, "Beans registered");
 
             // resolve their dependencies
-            resolveDependencies();
+            resolveBeans();
             info(logger, "Beans dependencies resolved");
 
             // apply post processing after bean instantiation
@@ -245,14 +260,14 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      * concrete implementation) by one of the interface that it implements.
      *
      * @see #loadBeanRegistry()
-     * @see #resolveBeanRecursively(String)
+     * @see #resolveDependenciesRecursively(String)
      * @see #applyPostProcessing()
      */
     private void registerManagedBeans(Set<Class<?>> managedBeanClasses) {
         for (Class<?> c : managedBeanClasses) {
             if (c.isInterface()) {
                 throw new TypeNotSupportedForInjectionException(
-                        String.format("Interface cannot be created as a managed bean (e.g., using %s), type: %s",
+                        format("Interface cannot be created as a managed bean (e.g., using %s), type: %s",
                                 MBean.class.getSimpleName(), c.toString())
                 );
             }
@@ -309,21 +324,35 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     }
 
     /**
-     * Resolve dependencies between beans (in beanNameSet) recursively
+     * Instantiate managed beans & inject dependencies
      * <p>
-     * The child nodes are resolved first, then the parent nodes. Eventually, there will be a child node that doesn't
-     * have any dependency, so we can just simply create it, and inject it into its 'parent' bean, this is essentially
-     * how it works.
+     * All beans are instantiated first, then the dependencies between them are injected
      * </p>
-     * <p>
-     * The dependencies between beans are just like trees (or, strictly speaking, a graph). A graph without circles
-     * (circular dependencies) is essentially a n-node tree.
-     * </p>
+     *
+     * @see #instantiateUnresolvedBeanEagerly(String)
+     * @see #resolveDependenciesRecursively(String)
      */
-    private void resolveDependencies() {
-        // load dependencies of each bean recursively
+    private void resolveBeans() {
+        // instantiate all the beans first (without any references of dependencies being injected)
         for (String beanName : beanNameSet) {
-            resolveBeanRecursively(beanName);
+            instantiateUnresolvedBeanEagerly(beanName);
+        }
+
+        // load dependencies of each bean recursively, note that at this point, we have all the beans created already
+        for (String beanName : beanNameSet) {
+            resolveDependenciesRecursively(beanName);
+        }
+    }
+
+    /**
+     * Instantiate the bean eagerly using pre-selected {@link BeanInstantiationStrategy}
+     */
+    private void instantiateUnresolvedBeanEagerly(String beanName) {
+        String implBeanName = findNameOfPossibleBeanAlias(beanName);
+        if (!beanResolved.contains(implBeanName)) {
+            Object bean = beanInstantiationStrategy.instantiateBean(beanTypeMap.get(implBeanName));
+            // register an eagerly created bean, wherein the dependencies are not resolved
+            registerEagerlyCreatedSingletonBean(implBeanName, bean);
         }
     }
 
@@ -349,19 +378,18 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     }
 
     /**
-     * It does two things:
-     * <ul>
-     * <li>
-     * Populate beans
-     * </li>
-     * <li>
-     * Inject dependencies into beans
-     * </li>
-     * </ul>
-     *
-     * @param beanName name of bean, which can be an alias as well
+     * Resolve dependencies between beans (in beanNameSet) recursively
+     * <p>
+     * The child nodes are resolved first, then the parent nodes. Eventually, there will be a child node that doesn't
+     * have any dependency, so we can just simply create it, and inject it into its 'parent' bean, this is essentially
+     * how it works.
+     * </p>
+     * <p>
+     * The dependencies between beans are just like trees (or, strictly speaking, a graph). A graph without circles
+     * (circular dependencies) is essentially a n-node tree.
+     * </p>
      */
-    private void resolveBeanRecursively(String beanName) {
+    private void resolveDependenciesRecursively(String beanName) {
         Objects.requireNonNull(beanName);
 
         String implBeanName = findNameOfPossibleBeanAlias(beanName);
@@ -369,6 +397,11 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         // bean has been resolved
         if (beanResolved.contains(implBeanName))
             return;
+
+        // get the instantiated bean, see if it's actually populated
+        Object bean = beanInstanceMap.get(implBeanName);
+        Objects.requireNonNull(bean, format("Bean: '%s' has not yet been instantiated, unable to inject dependencies",
+                beanName));
 
         Class<?> beanClz = beanTypeMap.get(implBeanName);
         Objects.requireNonNull(beanClz, "Unable to find class of bean: " + beanName);
@@ -388,21 +421,16 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             // update dependency cache
             registerDependency(beanName, dependentAlias);
             // continue to resolve the dependent bean
-            resolveBeanRecursively(dependentAlias);
+            resolveDependenciesRecursively(dependentAlias);
         }
-
-        /* start to inject the dependencies between beans:
-        1. instantiate the bean
-        2. inject dependencies
-         */
-        // instantiate the bean
-        Object bean = beanInstantiationStrategy.instantiateBean(beanTypeMap.get(implBeanName));
-        registerSingletonBean(implBeanName, bean);
 
         // inject dependencies
         for (Map.Entry<String, List<BeanPropertyInfo>> dependent : dependencies.entrySet()) {
             injectDependencies(bean, dependent.getKey(), dependent.getValue());
         }
+
+        // mark the bean as resolved
+        beanResolved.add(implBeanName);
     }
 
     /** Find actual implementation bean's name by a possible alias */
@@ -420,7 +448,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             return null;
         // multiple beans are found, must have circular dependencies
         if (actualBeanNames.size() > 1)
-            throw new CircularDependencyException(String.format("Found two beans (%s) with the same alias (%s)",
+            throw new CircularDependencyException(format("Found two beans (%s) with the same alias (%s)",
                     actualBeanNames.toString(), beanAlias));
         // the actual bean name is found, return it's type
         return actualBeanNames.iterator().next();
