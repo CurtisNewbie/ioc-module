@@ -21,9 +21,10 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
     public DefaultApplicationContext() {
         this.singletonBeanRegistry = new DefaultSingletonBeanRegistry();
         this.beanDependencyParser = new AnnotatedBeanDependencyParser();
+        // this order matters
         this.beanPostProcessorList = Arrays.asList(
-                new ContextAwareBeanPostProcessor(this),
-                new DependencyAnnotationBeanPostProcessor(singletonBeanRegistry, beanDependencyParser)
+                new DependencyAnnotationBeanPostProcessor(singletonBeanRegistry, beanDependencyParser),
+                new ContextAwareBeanPostProcessor(this)
         );
     }
 
