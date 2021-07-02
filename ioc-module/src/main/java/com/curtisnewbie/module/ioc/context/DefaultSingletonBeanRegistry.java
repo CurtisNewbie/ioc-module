@@ -118,7 +118,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     }
 
     /** Register eagerly created singleton bean, whose dependencies are not yet resolved */
-    private void registerEagerlyCreatedSingletonBean(String beanName, Object bean) {
+    @Override
+    public void registerEagerlyCreatedSingletonBean(String beanName, Object bean) {
         Objects.requireNonNull(beanName);
         Objects.requireNonNull(bean);
 
@@ -158,6 +159,23 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
         synchronized (this.dependenciesMap) {
             return this.checkIsDependentRecursively(beanName, dependentBeanName, new HashSet<>());
+        }
+    }
+
+    @Override
+    public boolean isBeanResolved(String beanName) {
+        String implBeanName = findNameOfPossibleBeanAlias(beanName);
+        return beanResolved.contains(implBeanName);
+    }
+
+    @Override
+    public void markBeanAsResolved(String beanName) {
+        String implBeanName = findNameOfPossibleBeanAlias(beanName);
+        if (!beanResolved.add(implBeanName)) {
+            // ensure bugs are discovered as early as possible
+            throw new IllegalArgumentException(
+                    format("Bean: '%s' has been resolved already, cannot be marked again", beanName)
+            );
         }
     }
 
@@ -240,11 +258,21 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             registerManagedBeans(managedBeanClasses);
             info(logger, "Beans registered");
 
-            // resolve their dependencies
-            resolveBeans();
-            info(logger, "Beans dependencies resolved");
+            // instantiate all the beans first (without any references of dependencies being injected)
+            for (String beanName : beanNameSet) {
+                instantiateUnresolvedBeanEagerly(beanName);
+            }
+            info(logger, "Beans instantiated eagerly");
 
-            // apply post processing after bean instantiation
+            // todo this part should be moved to post processor
+            // resolve dependencies between beans, but the dependencies are not yet injected
+            for (String beanName : beanNameSet) {
+                resolveDependenciesRecursively(beanName);
+            }
+            // todo ------
+
+            // delegate actual dependency injection to the postProcessors for extensibility
+            // and the post processing is applied after all managed beans' instantiation
             applyPostProcessing();
             info(logger, "Beans post processing applied");
         }
@@ -333,15 +361,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      * @see #resolveDependenciesRecursively(String)
      */
     private void resolveBeans() {
-        // instantiate all the beans first (without any references of dependencies being injected)
-        for (String beanName : beanNameSet) {
-            instantiateUnresolvedBeanEagerly(beanName);
-        }
 
-        // load dependencies of each bean recursively, note that at this point, we have all the beans created already
-        for (String beanName : beanNameSet) {
-            resolveDependenciesRecursively(beanName);
-        }
     }
 
     /**
@@ -377,6 +397,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
     }
 
+    // TODO: 02/07/2021 Move this part to post processors
     /**
      * Resolve dependencies between beans (in beanNameSet) recursively
      * <p>
@@ -392,26 +413,22 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     private void resolveDependenciesRecursively(String beanName) {
         Objects.requireNonNull(beanName);
 
-        String implBeanName = findNameOfPossibleBeanAlias(beanName);
-
         // bean has been resolved
-        if (beanResolved.contains(implBeanName))
+        if (isBeanResolved(beanName))
             return;
 
         // get the instantiated bean, see if it's actually populated
-        Object bean = beanInstanceMap.get(implBeanName);
+        Object bean = getBeanByName(beanName);
         Objects.requireNonNull(bean, format("Bean: '%s' has not yet been instantiated, unable to inject dependencies",
                 beanName));
 
-        Class<?> beanClz = beanTypeMap.get(implBeanName);
-        Objects.requireNonNull(beanClz, "Unable to find class of bean: " + beanName);
-
+        Class<?> beanClz = bean.getClass();
         Map<String, List<BeanPropertyInfo>> dependencies = beanDependencyParser.parseDependenciesOfClass(beanClz);
         for (String dependentAlias : dependencies.keySet()) {
             String dependentImplBeanName = findNameOfPossibleBeanAlias(dependentAlias);
 
             // detect unresolvable dependency
-            if (!beanNameSet.contains(dependentImplBeanName)) {
+            if (!beanInstanceMap.containsKey(dependentImplBeanName)) {
                 throw new UnsatisfiedDependencyException("Detected unresolvable dependency: " + dependentAlias);
             }
             // detect circular dependency
@@ -430,7 +447,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
 
         // mark the bean as resolved
-        beanResolved.add(implBeanName);
+        markBeanAsResolved(beanName);
     }
 
     /** Find actual implementation bean's name by a possible alias */

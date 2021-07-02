@@ -33,6 +33,11 @@ public interface SingletonBeanRegistry extends ConfigurableBeanRegistry {
     void registerSingletonBean(Class<?> clazz, Object bean);
 
     /**
+     * Register eagerly created singleton bean, whose dependencies are not yet resolved
+     */
+    void registerEagerlyCreatedSingletonBean(String beanName, Object bean);
+
+    /**
      * Register a dependency of this bean
      */
     void registerDependency(String beanName, String dependentBeanName);
@@ -44,6 +49,21 @@ public interface SingletonBeanRegistry extends ConfigurableBeanRegistry {
      * @param dependentBeanName the bean that might be dependent on
      */
     boolean isDependent(String beanName, String dependentBeanName);
+
+    /**
+     * Check if the bean is resolved (instantiated and dependencies injected)
+     *
+     * @param beanName bean name
+     */
+    boolean isBeanResolved(String beanName);
+
+    /**
+     * Mark the bean as resolved (instantiated and dependencies injected)
+     *
+     * @param beanName bean name
+     * @see #isBeanResolved(String)
+     */
+    void markBeanAsResolved(String beanName);
 
     /**
      * Load the bean registry
