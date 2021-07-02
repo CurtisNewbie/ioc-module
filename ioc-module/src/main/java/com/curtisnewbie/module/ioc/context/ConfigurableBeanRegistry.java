@@ -20,11 +20,6 @@ public interface ConfigurableBeanRegistry extends BeanRegistry {
     void registerBeanPostProcessor(List<BeanPostProcessor> beanPostProcessorList);
 
     /**
-     * Set {@link BeanDependencyParser} to be used by the registry
-     */
-    void setBeanDependencyParser(BeanDependencyParser beanDependencyParser);
-
-    /**
      * Set {@link BeanClassScanner} to be used by the registry
      */
     void setBeanClassScanner(BeanClassScanner beanClassScanner);

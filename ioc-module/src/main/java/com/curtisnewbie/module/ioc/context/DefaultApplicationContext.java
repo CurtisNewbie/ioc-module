@@ -1,7 +1,6 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
-import com.curtisnewbie.module.ioc.processing.ContextAwareBeanPostProcessor;
+import com.curtisnewbie.module.ioc.processing.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,12 +15,16 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     /** Registry of singleton beans */
     private final SingletonBeanRegistry singletonBeanRegistry;
-    private List<BeanPostProcessor> beanPostProcessorList = Arrays.asList(
-            new ContextAwareBeanPostProcessor(this)
-    );
+    private List<BeanPostProcessor> beanPostProcessorList;
+    private final BeanDependencyParser beanDependencyParser;
 
     public DefaultApplicationContext() {
         this.singletonBeanRegistry = new DefaultSingletonBeanRegistry();
+        this.beanDependencyParser = new AnnotatedBeanDependencyParser();
+        this.beanPostProcessorList = Arrays.asList(
+                new ContextAwareBeanPostProcessor(this),
+                new DependencyAnnotationBeanPostProcessor(singletonBeanRegistry, beanDependencyParser)
+        );
     }
 
     @Override

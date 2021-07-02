@@ -85,9 +85,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     /** Scanner of classes of annotated beans */
     private BeanClassScanner beanClzScanner;
 
-    /** Parser of beans' dependencies */
-    private BeanDependencyParser beanDependencyParser;
-
     /** List of BeanPostProcessors that process the bean after instantiation */
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
 
@@ -100,7 +97,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     public DefaultSingletonBeanRegistry() {
         this.beanClzScanner = new AnnotatedBeanClassScanner();
-        this.beanDependencyParser = new AnnotatedBeanDependencyParser();
     }
 
     @Override
@@ -218,16 +214,16 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     @Override
     public boolean containsBean(String name) {
         Objects.requireNonNull(name);
-        return beanInstanceMap.containsKey(name);
+        String implBeanName = findNameOfPossibleBeanAlias(name);
+        if (implBeanName == null)
+            return false;
+        return beanInstanceMap.containsKey(implBeanName);
     }
 
     @Override
     public boolean containsBean(Class<?> clazz) {
         Objects.requireNonNull(clazz);
-        String beanName = findNameOfPossibleBeanAlias(toBeanName(clazz));
-        if (beanName == null)
-            return false;
-        return beanInstanceMap.containsKey(beanName);
+        return containsBean(toBeanName(clazz));
     }
 
     @Override
@@ -278,18 +274,10 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             }
             info(logger, "Beans instantiated eagerly");
 
-            // todo this part should be moved to post processor
-            // resolve dependencies between beans, but the dependencies are not yet injected
-            for (String beanName : beanNameSet) {
-                resolveDependenciesRecursively(beanName);
-            }
-            // todo ------
-
             // delegate actual dependency injection to the postProcessors for extensibility
             // and the post processing is applied after all managed beans' instantiation
             applyPostProcessing();
             info(logger, "Beans post processing applied");
-
 
         }
     }
@@ -304,7 +292,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      * concrete implementation) by one of the interface that it implements.
      *
      * @see #loadBeanRegistry()
-     * @see #resolveDependenciesRecursively(String)
      * @see #applyPostProcessing()
      */
     private void registerManagedBeans(Set<Class<?>> managedBeanClasses) {
@@ -368,19 +355,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     }
 
     /**
-     * Instantiate managed beans & inject dependencies
-     * <p>
-     * All beans are instantiated first, then the dependencies between them are injected
-     * </p>
-     *
-     * @see #instantiateUnresolvedBeanEagerly(String)
-     * @see #resolveDependenciesRecursively(String)
-     */
-    private void resolveBeans() {
-
-    }
-
-    /**
      * Instantiate the bean eagerly using pre-selected {@link BeanInstantiationStrategy}
      */
     private void instantiateUnresolvedBeanEagerly(String beanName) {
@@ -415,72 +389,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
     }
 
-    // TODO: 02/07/2021 Move this part to post processors
-
-    /**
-     * Resolve dependencies between beans (in beanNameSet) recursively
-     * <p>
-     * The child nodes are resolved first, then the parent nodes. Eventually, there will be a child node that doesn't
-     * have any dependency, so we can just simply create it, and inject it into its 'parent' bean, this is essentially
-     * how it works.
-     * </p>
-     * <p>
-     * The dependencies between beans are just like trees (or, strictly speaking, a graph). A graph without circles
-     * (circular dependencies) is essentially a n-node tree.
-     * </p>
-     */
-    private void resolveDependenciesRecursively(String beanName) {
-        Objects.requireNonNull(beanName);
-
-        // bean has been resolved
-        if (isBeanResolved(beanName))
-            return;
-
-        // get the instantiated bean, see if it's actually populated
-        Object bean = getBeanByName(beanName);
-        Objects.requireNonNull(bean, format("Bean: '%s' has not yet been instantiated, unable to inject dependencies",
-                beanName));
-
-        Class<?> beanClz = bean.getClass();
-
-        /*
-        get list of dependent beans of this bean, and the properties each dependent will be injected into,
-        E.g., if current bean is Bean A, Bean A requires Bean B at field fieldOne.
-         Then the Bean B and field fieldOne together will become a single DependentBeanInfo
-         */
-        List<DependentBeanInfo> dependentBeans = beanDependencyParser.parseDependencies(beanClz);
-        for (DependentBeanInfo dependent : dependentBeans) {
-            String dependentAlias = dependent.getDependentBeanName();
-            String dependentImplBeanName = findNameOfPossibleBeanAlias(dependentAlias);
-            Objects.requireNonNull(dependentImplBeanName,
-                    format("Dependent Bean: '%s' not found", dependentImplBeanName));
-
-            // detect unresolvable dependency
-            if (!beanInstanceMap.containsKey(dependentImplBeanName)) {
-                throw new UnsatisfiedDependencyException("Detected unresolvable dependency: " + dependentAlias);
-            }
-            // detect circular dependency
-            if (isDependent(beanName, dependentAlias)) {
-                throw new CircularDependencyException("Detected circular dependency between " + beanName + " and " + dependentAlias);
-            }
-            // update dependency cache
-            registerDependency(beanName, dependentAlias);
-            // continue to resolve the dependent bean
-            resolveDependenciesRecursively(dependentAlias);
-        }
-
-        // inject dependencies
-        for (DependentBeanInfo dependent : dependentBeans) {
-            injectDependentBean(bean, dependent);
-        }
-
-        // TODO: 02/07/2021 if we use postProcessors for extensibility, and there are multiple postProcessors that
-        //  inject dependencies for different annotations, how do we know which bean is actually resolved? Since we are
-        //  traversing a graph, how do we prevent parsing the dependency tree of a previous traversed bean again and again.
-        //  The 'mark been as resolved' idea doesn't seem right :(.
-        // mark the bean as resolved
-        markBeanAsResolved(beanName);
-    }
 
     /** Find actual implementation bean's name by a possible alias */
     private String findNameOfPossibleBeanAlias(String beanAlias) {
@@ -503,42 +411,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         return actualBeanNames.iterator().next();
     }
 
-    // TODO: 02/07/2021 Move this part to post processors
-
-    /**
-     * Inject a dependent bean into the target bean
-     *
-     * @param bean              bean
-     * @param dependentBeanInfo info of a dependent bean
-     */
-    private void injectDependentBean(Object bean, DependentBeanInfo dependentBeanInfo) {
-        Objects.requireNonNull(bean, "Unable to inject dependencies, bean is null");
-        Objects.requireNonNull(dependentBeanInfo, "Unable to inject dependencies, dependent bean info is null");
-
-        // dependent bean's name (which might be an alias)
-        String dependentBeanName = dependentBeanInfo.getDependentBeanName();
-
-        // the properties info of this bean that require dependency injection
-        List<BeanPropertyInfo> toBeInjectedProperties = dependentBeanInfo.getBeanPropertiesToInject();
-
-        Objects.requireNonNull(dependentBeanName, "Unable to inject dependencies, dependent bean's name is null");
-        Objects.requireNonNull(toBeInjectedProperties, "Unable to inject dependencies, properties list to be injected is null");
-
-        if (toBeInjectedProperties == null || toBeInjectedProperties.isEmpty())
-            return;
-
-        // the actual implementation bean, the required type might be an interface, so we need to handle the casting
-        Object dependentImplBeanInstance = getBeanByName(dependentBeanName);
-        Objects.requireNonNull(dependentImplBeanInstance, "Unable to find instance of bean: " + dependentBeanName);
-
-        for (BeanPropertyInfo prop : toBeInjectedProperties) {
-            if (prop.canSatisfyRequiredType(dependentImplBeanInstance.getClass())) {
-                // inject the dependent bean into the field
-                prop.setValueToPropertyOfBean(bean, dependentImplBeanInstance);
-            }
-        }
-    }
-
     /** Set {@link BeanClassScanner} to be used by the registry, should invoke this before {@link #loadBeanRegistry()} */
     @Override
     public void setBeanClassScanner(BeanClassScanner beanClassScanner) {
@@ -553,18 +425,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         Objects.requireNonNull(beanInstantiationStrategy);
         synchronized (getMutex()) {
             this.beanInstantiationStrategy = beanInstantiationStrategy;
-        }
-    }
-
-    /**
-     * Set {@link BeanDependencyParser} to be used by the registry, should invoke this before {@link
-     * #loadBeanRegistry()}
-     */
-    @Override
-    public void setBeanDependencyParser(BeanDependencyParser beanDependencyParser) {
-        Objects.requireNonNull(beanDependencyParser);
-        synchronized (getMutex()) {
-            this.beanDependencyParser = beanDependencyParser;
         }
     }
 
