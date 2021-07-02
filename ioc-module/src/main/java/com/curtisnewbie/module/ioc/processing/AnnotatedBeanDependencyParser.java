@@ -11,6 +11,8 @@ import com.curtisnewbie.module.ioc.util.BeanNameUtil;
 import com.curtisnewbie.module.ioc.util.BeansUtil;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.AnnotationTypeMismatchException;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -21,6 +23,11 @@ import java.util.*;
  */
 public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
 
+    private List<Class<? extends Annotation>> injectableAnnotations = Collections.unmodifiableList(Arrays.asList(
+            Dependency.class
+            )
+    );
+
     private Map<String, List<BeanPropertyInfo>> parseDependenciesOfClass(Class<?> clz) {
         Objects.requireNonNull(clz, "class is null, unable to parse dependencies");
         Map<String, List<BeanPropertyInfo>> dependencies = new HashMap<>();
@@ -29,7 +36,7 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
         Field[] fields = clz.getDeclaredFields();
         for (Field f : fields) {
             // the field has a @Dependency annotation & it contains a writer method
-            if (f.isAnnotationPresent(Dependency.class)) {
+            if (isInjectableAnnotationPresent(f.getDeclaredAnnotations())) {
                 PropertyDescriptor pd = pdMap.get(f.getName());
                 // if pd == null, means there is not getter and setter for this field at all
                 // as long as the writerMethod is missing, this field is not injectable
@@ -122,5 +129,32 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
             pdMap.put(pd.getName(), pd);
         }
         return pdMap;
+    }
+
+    /** check if an injectable annotation is present */
+    private boolean isInjectableAnnotationPresent(Annotation[] annotations) {
+        for (Annotation annt : annotations) {
+            // the annotation itself is a supported annotation
+            if (isSupported(annt.annotationType())) {
+                return true;
+            }
+
+            // for composed annotation, see if this annotation has any other annotation that is supported
+            for (Annotation composed : annt.annotationType().getDeclaredAnnotations()) {
+                if (isSupported(composed.annotationType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isSupported(Class<? extends Annotation> annotationClz) {
+        for (Class<? extends Annotation> supportedAnnotationClz : injectableAnnotations) {
+            if (annotationClz.equals(supportedAnnotationClz)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

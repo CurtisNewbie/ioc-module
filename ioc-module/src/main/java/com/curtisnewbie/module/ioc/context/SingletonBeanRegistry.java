@@ -11,7 +11,7 @@ package com.curtisnewbie.module.ioc.context;
 public interface SingletonBeanRegistry extends ConfigurableBeanRegistry {
 
     /**
-     * Get bean's name by possibly alias
+     * Get bean's name by the name that is possibly an alias
      *
      * @param beanNameOrAlias bean name or its alias
      * @return bean's name

@@ -121,7 +121,10 @@ public class BeanRegistryTest {
         // get bean by concrete class
         ServiceAggregator serviceAggregator = registry.getBeanByClass(ServiceAggregator.class);
         Assertions.assertNotNull(serviceAggregator, "Bean not found after initialisation, might have a bug");
-//        serviceAggregator.whoIAm();
+        Assertions.assertNotNull(serviceAggregator.getAuthenticationManager(), "Didn't inject dependent, might have a bug");
+        Assertions.assertNotNull(serviceAggregator.getService(), "Didn't inject dependent, might have a bug");
+        Assertions.assertNotNull(serviceAggregator.getUserServiceImpl(), "Didn't inject dependent, might have a bug");
+        serviceAggregator.whoIAm();
 
         // get bean by interface
         Service service = registry.getBeanByClass(Service.class);

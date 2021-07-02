@@ -9,6 +9,6 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(value = RetentionPolicy.RUNTIME)
-@Target(value = ElementType.FIELD)
+@Target(value = {ElementType.FIELD, ElementType.ANNOTATION_TYPE})
 public @interface Dependency {
 }

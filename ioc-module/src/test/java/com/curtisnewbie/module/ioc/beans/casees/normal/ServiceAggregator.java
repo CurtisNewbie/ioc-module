@@ -9,7 +9,7 @@ import com.curtisnewbie.module.ioc.annotations.MBean;
 @MBean
 public class ServiceAggregator implements KnowWhoIAm {
 
-    @Dependency
+    @Autowired
     private AuthenticationManager authenticationManager;
 
     @Dependency
