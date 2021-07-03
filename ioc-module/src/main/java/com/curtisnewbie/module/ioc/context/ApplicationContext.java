@@ -11,4 +11,9 @@ public interface ApplicationContext {
      * Get bean registry
      */
     BeanRegistry getBeanRegistry();
+
+    /**
+     * Get main class
+     */
+    Class<?> getMainClazz();
 }

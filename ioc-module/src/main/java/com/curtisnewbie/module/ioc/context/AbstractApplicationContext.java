@@ -71,6 +71,7 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
      *
      * @see #initialize(Class)
      */
+    @Override
     public Class<?> getMainClazz() {
         return this.mainClazz;
     }
