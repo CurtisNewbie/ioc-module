@@ -24,7 +24,8 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         // this order matters
         this.beanPostProcessorList = Arrays.asList(
                 new DependencyInjectionBeanPostProcessor(singletonBeanRegistry, beanDependencyParser),
-                new ContextAwareBeanPostProcessor(this)
+                new ApplicationContextAwareBeanPostProcessor(this),
+                new BeanRegistryAwareBeanPostProcessor(this.singletonBeanRegistry)
         );
     }
 

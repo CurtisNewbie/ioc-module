@@ -249,6 +249,23 @@ public class BeanRegistryTest {
     }
 
     @Test
+    public void shouldSetContextRelatedBeansThroughAwareInterfaces() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer,
+                ContextAwareBean.class);
+
+        ApplicationContext applicationContext = contextInitializer.initialize(BeanRegistryTest.class);
+        BeanRegistry registry = applicationContext.getBeanRegistry();
+
+        ContextAwareBean contextAwareBean = registry.getBeanByClass(ContextAwareBean.class);
+        Assertions.assertNotNull(contextAwareBean, "Bean not found after initialisation, might have a bug");
+        Assertions.assertNotNull(contextAwareBean.getApplicationContext(), "Didn't inject ApplicationContext, might have a bug");
+        Assertions.assertNotNull(contextAwareBean.getBeanRegistry(), "Didn't inject BeanRegistry, might have a bug");
+
+        logger.info("Test passed");
+    }
+
+    @Test
     public void shouldSuccessfullyInitialised() {
         ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,

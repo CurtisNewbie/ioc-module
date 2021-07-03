@@ -8,11 +8,11 @@ import com.curtisnewbie.module.ioc.aware.ApplicationContextAware;
  *
  * @author yongjie.zhuang
  */
-public class ContextAwareBeanPostProcessor implements BeanPostProcessor {
+public class ApplicationContextAwareBeanPostProcessor implements BeanPostProcessor {
 
     private ApplicationContext applicationContext;
 
-    public ContextAwareBeanPostProcessor(ApplicationContext applicationContext) {
+    public ApplicationContextAwareBeanPostProcessor(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
     }
 
