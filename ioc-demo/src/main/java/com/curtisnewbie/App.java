@@ -9,6 +9,7 @@ import com.curtisnewbie.module.ioc.context.ApplicationContext;
 import com.curtisnewbie.module.ioc.aware.ApplicationContextAware;
 import com.curtisnewbie.module.ioc.context.BeanRegistry;
 import com.curtisnewbie.module.ioc.context.ContextFactory;
+import com.curtisnewbie.module.ioc.context.ContextInitializer;
 
 @MBean
 public class App implements ApplicationContextAware {
@@ -18,7 +19,11 @@ public class App implements ApplicationContextAware {
     public static void main(String[] args) {
 
         // initialise context
-        ContextFactory.getNewContextInitializer().initialize(App.class);
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        // might mute the logs in context and context initializer
+//        if (contextInitializer.canMuteLog())
+//            contextInitializer.muteLog();
+        contextInitializer.initialize(App.class);
 
         // get registry
         BeanRegistry registry = applicationContext.getBeanRegistry();
