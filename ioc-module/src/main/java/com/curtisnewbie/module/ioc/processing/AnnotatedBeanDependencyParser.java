@@ -12,7 +12,6 @@ import com.curtisnewbie.module.ioc.util.BeansUtil;
 
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
-import java.lang.annotation.AnnotationTypeMismatchException;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -47,10 +46,13 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
                     );
                 }
                 Class<?> propType = pd.getPropertyType();
-                if (isBoxedPrimitiveType(propType)) {
+                if (isPrimitiveTypes(propType)) {
                     throw new TypeNotSupportedForInjectionException(
-                            "Basic/Primitive types are not supported for dependency injection, " +
-                                    "field: " + f.getName());
+                            String.format(
+                                    "Primitive types are not supported for dependency injection, field: %s, type: %s",
+                                    f.getName(),
+                                    propType.getSimpleName()
+                            ));
                 }
                 if (isCollections(propType)) {
                     throw new TypeNotSupportedForInjectionException(
@@ -77,11 +79,11 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
     }
 
     /**
-     * Check if the class is boxed primitive type, e.g., Integer, Double, etc.
+     * Check if the class is primitive types, such as int, Integer, etc.
      *
      * @param clz class
      */
-    private boolean isBoxedPrimitiveType(Class<?> clz) {
+    private boolean isPrimitiveTypes(Class<?> clz) {
         if (clz.isPrimitive()) {
             return true;
         }
@@ -98,11 +100,14 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
     }
 
     /**
-     * Check if the class is a Collection
+     * Check if the class is a Collection or Array
      *
      * @param clz class
      */
     private boolean isCollections(Class<?> clz) {
+        if (clz.isArray()) {
+            return true;
+        }
         List<Class<?>> boxedTypes = Arrays.asList(Collection.class);
         return isTypes(clz, boxedTypes);
     }
