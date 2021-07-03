@@ -7,6 +7,7 @@ import java.lang.annotation.*;
  * as a dependency
  *
  * @author yongjie.zhuang
+ * @see Dependency
  */
 @Documented
 @Retention(value = RetentionPolicy.RUNTIME)
