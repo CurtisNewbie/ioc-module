@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractApplicationContext implements ApplicationContext, ContextInitializer {
 
-    protected static final Logger logger = LogUtil.getLogger(AbstractApplicationContext.class);
+    private static final Logger logger = LogUtil.getLogger(AbstractApplicationContext.class);
     private volatile Class<?> mainClazz;
     private final AtomicBoolean isLogMuted = new AtomicBoolean(false);
     private final Object mutex = new Object();
@@ -39,17 +39,19 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
         // stop timer
         timer.stop();
 
-        LogUtil.info(
-                logger,
-                "ApplicationContext successfully initialized for %s, took %d milliseconds",
-                this.mainClazz.getName(),
-                timer.getMilliSeconds());
+        if (!isLogMuted.get()) {
+            LogUtil.info(
+                    logger,
+                    "ApplicationContext successfully initialized for %s, took %d milliseconds",
+                    this.mainClazz.getName(),
+                    timer.getMilliSeconds());
+        }
         return this;
     }
 
     @Override
     public void muteLog() {
-        isLogMuted.compareAndSet(false, true);
+        isLogMuted.set(true);
     }
 
     @Override

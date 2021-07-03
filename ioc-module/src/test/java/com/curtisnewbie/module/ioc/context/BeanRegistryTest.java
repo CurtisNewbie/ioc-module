@@ -31,7 +31,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not accessible field, might have a bug");
 
-        logger.info("Test: bean with not accessible field -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -43,7 +43,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should throw exception for interface with @MBean, might have a bug");
 
-        logger.info("Test: @Bean on interfaces -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -55,7 +55,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable int type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -67,7 +67,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable Integer type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -79,7 +79,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable String type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -91,7 +91,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable Double type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -103,7 +103,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable double type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -115,7 +115,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable Long type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -127,7 +127,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable long type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -139,7 +139,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable Float type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -151,7 +151,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable float type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -163,7 +163,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable Short type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -175,7 +175,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable short type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -187,7 +187,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable Byte type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -199,7 +199,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable byte type -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -213,7 +213,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect direct circular dependency, might have a bug");
 
-        logger.info("Test: beans with direct circular dependencies -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -228,7 +228,7 @@ public class BeanRegistryTest {
             contextInitializer.initialize(BeanRegistryTest.class);
         }, "Should detect indirect/transitive circular dependency, might have a bug");
 
-        logger.info("Test: beans with transitive/indirect circular dependencies -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -245,7 +245,7 @@ public class BeanRegistryTest {
         Assertions.assertNotNull(beanWithContextBeans.getApplicationContext(), "Didn't inject ApplicationContext, might have a bug");
         Assertions.assertNotNull(beanWithContextBeans.getBeanRegistry(), "Didn't inject BeanRegistry, might have a bug");
 
-        logger.info("Test: inject context-related beans (e.g., ApplicationContext) -- passed");
+        logger.info("Test passed");
     }
 
     @Test
@@ -269,7 +269,6 @@ public class BeanRegistryTest {
         // get bean by interface
         Service service = registry.getBeanByClass(Service.class);
         Assertions.assertNotNull(service, "Bean not found after initialisation, might have a bug");
-//        service.whoIAm();
 
     }
 

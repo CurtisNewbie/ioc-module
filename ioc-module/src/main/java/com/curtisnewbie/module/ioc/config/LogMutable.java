@@ -22,6 +22,6 @@ public interface LogMutable {
      * Mute the log
      */
     default void muteLog() {
-        // default it does nothing
+        // by default it does nothing
     }
 }

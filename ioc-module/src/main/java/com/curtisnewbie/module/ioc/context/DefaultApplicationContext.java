@@ -30,7 +30,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     @Override
     protected void initializeContext() {
-        if (isLogMuted() && singletonBeanRegistry.canMuteLog())
+        if (singletonBeanRegistry.canMuteLog() && isLogMuted())
             singletonBeanRegistry.muteLog();
         // register bean post processors
         this.singletonBeanRegistry.registerBeanPostProcessor(beanPostProcessorList);
