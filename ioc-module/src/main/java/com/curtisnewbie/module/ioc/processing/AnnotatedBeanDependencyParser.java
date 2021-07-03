@@ -94,7 +94,8 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
                 Float.class,
                 Long.class,
                 Short.class,
-                Byte.class
+                Byte.class,
+                Character.class
         );
         return isTypes(clz, boxedTypes);
     }

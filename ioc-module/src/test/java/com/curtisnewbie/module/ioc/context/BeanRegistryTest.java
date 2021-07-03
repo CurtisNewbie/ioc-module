@@ -107,6 +107,30 @@ public class BeanRegistryTest {
     }
 
     @Test
+    public void shouldDetectNotInjectableBoxedCharType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithBoxedChar.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableCharType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithChar.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test passed");
+    }
+
+    @Test
     public void shouldDetectNotInjectableBoxedLongType() {
         ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithBoxedLong.class);
