@@ -1,10 +1,7 @@
 package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.beans.casees.circular.*;
-import com.curtisnewbie.module.ioc.beans.casees.invalid.BeanWithNotAccessibleField;
-import com.curtisnewbie.module.ioc.beans.casees.invalid.BeanWithNotSupportedProperties;
-import com.curtisnewbie.module.ioc.beans.casees.invalid.EmptyBean;
-import com.curtisnewbie.module.ioc.beans.casees.invalid.InterfaceWithMBean;
+import com.curtisnewbie.module.ioc.beans.casees.invalid.*;
 import com.curtisnewbie.module.ioc.beans.casees.normal.*;
 import com.curtisnewbie.module.ioc.exceptions.CircularDependencyException;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
@@ -50,15 +47,159 @@ public class BeanRegistryTest {
     }
 
     @Test
-    public void shouldDetectNotInjectableBasicTypes() {
+    public void shouldDetectNotInjectableIntType() {
         ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
-        setupMockScanner(contextInitializer, BeanWithNotSupportedProperties.class);
+        setupMockScanner(contextInitializer, BeanWithInt.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
             contextInitializer.initialize(BeanRegistryTest.class);
-        }, "Should detect not injectable basic types (e.g., primitive types), might have a bug");
+        }, "Should detect not injectable type, might have a bug");
 
-        logger.info("Test: bean with not injectable types -- passed");
+        logger.info("Test: bean with not injectable int type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableIntegerType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithBoxedInteger.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable Integer type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableStringType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithString.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable String type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableBoxedDoubleType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithBoxedDouble.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable Double type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableDoubleType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithDouble.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable double type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableBoxedLongType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithBoxedLong.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable Long type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableLongType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithLong.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable long type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableBoxedFloatType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithBoxedFloat.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable Float type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableFloatType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithFloat.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable float type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableBoxedShortType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithBoxedShort.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable Short type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableShortType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithShort.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable short type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableBoxedByteType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithBoxedByte.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable Byte type -- passed");
+    }
+
+    @Test
+    public void shouldDetectNotInjectableByteType() {
+        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithByte.class);
+
+        Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not injectable type, might have a bug");
+
+        logger.info("Test: bean with not injectable byte type -- passed");
     }
 
     @Test
@@ -124,17 +265,17 @@ public class BeanRegistryTest {
         Assertions.assertNotNull(serviceAggregator.getAuthenticationManager(), "Didn't inject dependent, might have a bug");
         Assertions.assertNotNull(serviceAggregator.getService(), "Didn't inject dependent, might have a bug");
         Assertions.assertNotNull(serviceAggregator.getUserServiceImpl(), "Didn't inject dependent, might have a bug");
-        serviceAggregator.whoIAm();
 
         // get bean by interface
         Service service = registry.getBeanByClass(Service.class);
         Assertions.assertNotNull(service, "Bean not found after initialisation, might have a bug");
 //        service.whoIAm();
 
-        logger.info("Test: normal dependency injection -- passed");
     }
 
     private void setupMockScanner(ContextInitializer mockedInitializer, Class<?>... clazzToBeFound) {
+        if (mockedInitializer.canMuteLog())
+            mockedInitializer.muteLog();
         DefaultSingletonBeanRegistry singletonBeanRegistry = DefaultSingletonBeanRegistry.class.cast(
                 ApplicationContext.class.cast(mockedInitializer)
                         .getBeanRegistry()
