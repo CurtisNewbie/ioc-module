@@ -17,10 +17,13 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
     private final SingletonBeanRegistry singletonBeanRegistry;
     private List<BeanPostProcessor> beanPostProcessorList;
     private final BeanDependencyParser beanDependencyParser;
+    private final BeanNameGenerator beanNameGenerator;
 
     public DefaultApplicationContext() {
+        this.beanNameGenerator = new BeanQualifiedNameGenerator();
         this.singletonBeanRegistry = new DefaultSingletonBeanRegistry();
-        this.beanDependencyParser = new AnnotatedBeanDependencyParser();
+        this.singletonBeanRegistry.setBeanNameGenerator(beanNameGenerator);
+        this.beanDependencyParser = new AnnotatedBeanDependencyParser(beanNameGenerator);
         // this order matters
         this.beanPostProcessorList = Arrays.asList(
                 new DependencyInjectionBeanPostProcessor(singletonBeanRegistry, beanDependencyParser),

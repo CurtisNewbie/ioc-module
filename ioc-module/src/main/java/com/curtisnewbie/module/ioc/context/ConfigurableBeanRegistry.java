@@ -30,4 +30,9 @@ public interface ConfigurableBeanRegistry extends BeanRegistry, LogMutable {
      */
     void setBeanInstantiationStrategy(BeanInstantiationStrategy beanInstantiationStrategy);
 
+    /**
+     * Set {@link BeanNameGenerator} to be used by the registry
+     */
+    void setBeanNameGenerator(BeanNameGenerator beanNameGenerator);
+
 }

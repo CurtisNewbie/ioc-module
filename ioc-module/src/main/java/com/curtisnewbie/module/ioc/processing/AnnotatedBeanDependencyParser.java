@@ -5,9 +5,9 @@ import com.curtisnewbie.module.ioc.beans.BeanPropertyInfo;
 import com.curtisnewbie.module.ioc.beans.DefaultBeanPropertyInfo;
 import com.curtisnewbie.module.ioc.beans.DefaultDependentBeanInfo;
 import com.curtisnewbie.module.ioc.beans.DependentBeanInfo;
+import com.curtisnewbie.module.ioc.context.BeanNameGenerator;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
 import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
-import com.curtisnewbie.module.ioc.util.BeanNameUtil;
 import com.curtisnewbie.module.ioc.util.BeansUtil;
 
 import java.beans.PropertyDescriptor;
@@ -26,6 +26,11 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
             Dependency.class
             )
     );
+    private final BeanNameGenerator beanNameGenerator;
+
+    public AnnotatedBeanDependencyParser(BeanNameGenerator beanNameGenerator) {
+        this.beanNameGenerator = beanNameGenerator;
+    }
 
     private Map<String, List<BeanPropertyInfo>> parseDependenciesOfClass(Class<?> clz) {
         Objects.requireNonNull(clz, "class is null, unable to parse dependencies");
@@ -59,7 +64,7 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
                             "Collections are not supported for dependency injection, " +
                                     "field: " + f.getName());
                 }
-                String dependentBeanName = BeanNameUtil.toBeanName(propType);
+                String dependentBeanName = beanNameGenerator.generateBeanName(propType);
                 // key: dependent's type, value: list of propertyInfo of this dependency type
                 dependencies.computeIfAbsent(dependentBeanName, k -> new ArrayList<>());
                 dependencies.get(dependentBeanName).add(new DefaultBeanPropertyInfo(f.getName(), pd));

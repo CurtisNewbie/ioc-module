@@ -11,7 +11,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
-import static com.curtisnewbie.module.ioc.util.BeanNameUtil.toBeanName;
 import static com.curtisnewbie.module.ioc.util.LogUtil.info;
 import static java.lang.String.format;
 
@@ -85,6 +84,8 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     /** List of BeanPostProcessors that process the bean after instantiation */
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
 
+    private BeanNameGenerator beanNameGenerator = new BeanQualifiedNameGenerator();
+
     private final ClassLoader classLoader = ClassLoaderHolder.getClassLoader();
 
     private BeanInstantiationStrategy beanInstantiationStrategy = new DefaultConstructorInstantiationStrategy();
@@ -136,7 +137,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         Objects.requireNonNull(clazz);
         Objects.requireNonNull(bean);
 
-        String beanName = toBeanName(clazz);
+        String beanName = beanNameGenerator.generateBeanName(clazz);
         registerSingletonBean(beanName, bean);
     }
 
@@ -202,13 +203,13 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     @Override
     public boolean containsBean(Class<?> clazz) {
         Objects.requireNonNull(clazz);
-        return containsBean(toBeanName(clazz));
+        return containsBean(beanNameGenerator.generateBeanName(clazz));
     }
 
     @Override
     public <T> T getBeanByClass(Class<T> clazz) {
         Objects.requireNonNull(clazz);
-        return clazz.cast(getBeanByName(toBeanName(clazz)));
+        return clazz.cast(getBeanByName(beanNameGenerator.generateBeanName(clazz)));
     }
 
     @Override
@@ -280,7 +281,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                                 MBean.class.getSimpleName(), c.toString())
                 );
             }
-            String beanName = toBeanName(c);
+            String beanName = beanNameGenerator.generateBeanName(c);
             beanTypeMap.put(beanName, c);
             beanNameSet.add(beanName);
 
@@ -315,7 +316,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                     it doesn't necessary cause circular dependency, as long as the different interfaces
                     are used for injection
                      */
-                String interfaceName = toBeanName(ic);
+                String interfaceName = beanNameGenerator.generateBeanName(ic);
                 beanTypeMap.put(interfaceName, ic);
                 beanAliasMap.computeIfAbsent(interfaceName, k -> new HashSet<>());
                 beanAliasMap.get(interfaceName).add(beanName);
@@ -403,6 +404,14 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         Objects.requireNonNull(beanInstantiationStrategy);
         synchronized (getMutex()) {
             this.beanInstantiationStrategy = beanInstantiationStrategy;
+        }
+    }
+
+    @Override
+    public void setBeanNameGenerator(BeanNameGenerator beanNameGenerator) {
+        Objects.requireNonNull(beanNameGenerator);
+        synchronized (getMutex()) {
+            this.beanNameGenerator = beanNameGenerator;
         }
     }
 
