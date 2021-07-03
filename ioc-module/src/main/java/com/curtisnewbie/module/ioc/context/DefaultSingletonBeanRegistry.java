@@ -8,6 +8,7 @@ import com.curtisnewbie.module.ioc.util.LogUtil;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 import static com.curtisnewbie.module.ioc.util.BeanNameUtil.toBeanName;
@@ -22,6 +23,7 @@ import static java.lang.String.format;
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     private static final Logger logger = LogUtil.getLogger(DefaultSingletonBeanRegistry.class);
+    private final AtomicBoolean isLogMuted = new AtomicBoolean(false);
 
     /**
      * Set of beans' name (excluding aliases)
@@ -228,34 +230,33 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                 throw new ContextInitializedException("Bean registry cannot be initialized multiple times");
             isInitialised = true;
 
-            info(logger, "Starts loading bean registry");
+            logIfNotMuted("Starts loading bean registry");
 
             // set the classloader to use
             beanClzScanner.setClassLoader(classLoader);
 
             // prepare the registry before starting to populate beans and inject dependencies
             prepareBeanRegistry();
-            info(logger, "Bean registry prepared");
+            logIfNotMuted("Bean registry prepared");
 
             // set of classes of beans that will be managed by this context
             Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses();
-            info(logger, "Discovered beans: %d", managedBeanClasses.size());
+            logIfNotMuted("Discovered beans: %d", managedBeanClasses.size());
 
             // register these managed beans, including their interfaces as aliases
             registerManagedBeans(managedBeanClasses);
-            info(logger, "Beans registered");
+            logIfNotMuted("Beans registered");
 
             // instantiate all the beans first (without any references of dependencies being injected)
             for (String beanName : beanNameSet) {
                 instantiateUnresolvedBeanEagerly(beanName);
             }
-            info(logger, "Beans instantiated eagerly");
+            logIfNotMuted("Beans instantiated eagerly");
 
             // delegate actual dependency injection to the postProcessors for extensibility
             // and the post processing is applied after all managed beans' instantiation
             applyPostProcessing();
-            info(logger, "Beans post processing applied");
-
+            logIfNotMuted("Beans post processing applied");
         }
     }
 
@@ -408,5 +409,20 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     /** Get object for mutex lock */
     private Object getMutex() {
         return this.mutex;
+    }
+
+    @Override
+    public boolean canMuteLog() {
+        return true;
+    }
+
+    @Override
+    public void muteLog() {
+        isLogMuted.compareAndSet(false, true);
+    }
+
+    private void logIfNotMuted(String formatStr, Object... args) {
+        if (!isLogMuted.get())
+            info(logger, formatStr, args);
     }
 }

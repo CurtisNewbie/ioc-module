@@ -1,5 +1,6 @@
 package com.curtisnewbie.module.ioc.context;
 
+import com.curtisnewbie.module.ioc.config.LogMutable;
 import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
 
 /**
@@ -8,7 +9,7 @@ import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
  * @author yongjie.zhuang
  * @see ContextFactory
  */
-public interface ContextInitializer {
+public interface ContextInitializer extends LogMutable {
 
     /**
      * Initialize the context

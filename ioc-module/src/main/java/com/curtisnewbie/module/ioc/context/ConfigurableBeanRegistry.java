@@ -1,5 +1,6 @@
 package com.curtisnewbie.module.ioc.context;
 
+import com.curtisnewbie.module.ioc.config.LogMutable;
 import com.curtisnewbie.module.ioc.processing.BeanDependencyParser;
 import com.curtisnewbie.module.ioc.processing.BeanInstantiationStrategy;
 import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
@@ -12,7 +13,7 @@ import java.util.List;
  *
  * @author yongjie.zhuang
  */
-public interface ConfigurableBeanRegistry extends BeanRegistry {
+public interface ConfigurableBeanRegistry extends BeanRegistry, LogMutable {
 
     /**
      * Register a list of {@link BeanPostProcessor}

@@ -5,6 +5,7 @@ import com.curtisnewbie.module.ioc.exceptions.ContextInitializedException;
 import com.curtisnewbie.module.ioc.util.CountdownTimer;
 import com.curtisnewbie.module.ioc.util.LogUtil;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 /**
@@ -14,8 +15,9 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractApplicationContext implements ApplicationContext, ContextInitializer {
 
-    private static final Logger logger = LogUtil.getLogger(AbstractApplicationContext.class);
+    protected static final Logger logger = LogUtil.getLogger(AbstractApplicationContext.class);
     private volatile Class<?> mainClazz;
+    private final AtomicBoolean isLogMuted = new AtomicBoolean(false);
     private final Object mutex = new Object();
 
     @Override
@@ -43,6 +45,23 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
                 this.mainClazz.getName(),
                 timer.getMilliSeconds());
         return this;
+    }
+
+    @Override
+    public void muteLog() {
+        isLogMuted.compareAndSet(false, true);
+    }
+
+    @Override
+    public boolean canMuteLog() {
+        return true;
+    }
+
+    /**
+     * Check if the log is supposed to be muted
+     */
+    protected boolean isLogMuted() {
+        return isLogMuted.get();
     }
 
     /**

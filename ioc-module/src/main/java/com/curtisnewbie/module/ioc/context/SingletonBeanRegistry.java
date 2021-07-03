@@ -1,5 +1,7 @@
 package com.curtisnewbie.module.ioc.context;
 
+import com.curtisnewbie.module.ioc.config.LogMutable;
+
 /**
  * Registry of singleton beans
  * <p>
