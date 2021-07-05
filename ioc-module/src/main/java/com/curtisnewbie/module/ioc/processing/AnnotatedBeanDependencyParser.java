@@ -5,7 +5,6 @@ import com.curtisnewbie.module.ioc.beans.BeanPropertyInfo;
 import com.curtisnewbie.module.ioc.beans.DefaultBeanPropertyInfo;
 import com.curtisnewbie.module.ioc.beans.DefaultDependentBeanInfo;
 import com.curtisnewbie.module.ioc.beans.DependentBeanInfo;
-import com.curtisnewbie.module.ioc.context.BeanNameGenerator;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
 import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
 import com.curtisnewbie.module.ioc.util.BeansUtil;

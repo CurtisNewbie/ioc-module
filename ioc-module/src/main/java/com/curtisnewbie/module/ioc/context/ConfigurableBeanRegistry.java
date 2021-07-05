@@ -1,10 +1,7 @@
 package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.config.LogMutable;
-import com.curtisnewbie.module.ioc.processing.BeanDependencyParser;
-import com.curtisnewbie.module.ioc.processing.BeanInstantiationStrategy;
-import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
-import com.curtisnewbie.module.ioc.processing.BeanClassScanner;
+import com.curtisnewbie.module.ioc.processing.*;
 
 import java.util.List;
 
