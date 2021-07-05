@@ -13,7 +13,7 @@ public final class ApplicationContextFactory {
     /**
      * Get a new, configurable ContextInitializer
      */
-    public static ConfigurableContextInitializer getNewContextInitializer() {
+    public static ContextInitializer getNewContextInitializer() {
         return new DefaultConfigurableContextInitializer();
     }
 }

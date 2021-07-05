@@ -292,7 +292,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldSuccessfullyInitialised() {
-        ConfigurableContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 AuthenticationManager.class,
                 UserServiceImpl.class,
