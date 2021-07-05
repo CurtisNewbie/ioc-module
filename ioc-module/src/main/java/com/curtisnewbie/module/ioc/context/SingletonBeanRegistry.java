@@ -1,7 +1,5 @@
 package com.curtisnewbie.module.ioc.context;
 
-import com.curtisnewbie.module.ioc.config.LogMutable;
-
 /**
  * Registry of singleton beans
  * <p>
@@ -10,7 +8,7 @@ import com.curtisnewbie.module.ioc.config.LogMutable;
  *
  * @author yongjie.zhuang
  */
-public interface SingletonBeanRegistry extends ConfigurableBeanRegistry {
+public interface SingletonBeanRegistry extends BeanRegistry {
 
     /**
      * Get bean's name by the name that is possibly an alias

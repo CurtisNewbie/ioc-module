@@ -19,7 +19,7 @@ import static java.lang.String.format;
  *
  * @author yongjie.zhuang
  */
-public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
+public class DefaultSingletonBeanRegistry implements ConfigurableSingletonBeanRegistry {
 
     private static final Logger logger = LogUtil.getLogger(DefaultSingletonBeanRegistry.class);
     private final AtomicBoolean isLogMuted = new AtomicBoolean(false);
@@ -78,23 +78,40 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     /** mutex lock */
     private final Object mutex = new Object();
 
-    /** Scanner of classes of annotated beans */
-    private BeanClassScanner beanClzScanner;
-
     /** List of BeanPostProcessors that process the bean after instantiation */
     private final List<BeanPostProcessor> beanPostProcessors = new ArrayList<>();
 
-    private BeanNameGenerator beanNameGenerator = new BeanQualifiedNameGenerator();
-
     private final ClassLoader classLoader = ClassLoaderHolder.getClassLoader();
 
-    private BeanInstantiationStrategy beanInstantiationStrategy = new DefaultConstructorInstantiationStrategy();
+    /*
+    Configurable components, which are also the potential extension points
+     */
+    private BeanClassScanner beanClzScanner;
+    private BeanNameGenerator beanNameGenerator;
+    private BeanInstantiationStrategy beanInstantiationStrategy;
+    private BeanAliasParser beanAliasParser;
 
     /** Indicate whether this registry is initialized, registry can only be initialised for once */
     private boolean isInitialised = false;
 
     public DefaultSingletonBeanRegistry() {
+        // fallback to default implementation
         this.beanClzScanner = new AnnotatedBeanClassScanner();
+        this.beanNameGenerator = new BeanQualifiedNameGenerator();
+        this.beanInstantiationStrategy = new DefaultConstructorInstantiationStrategy();
+        this.beanAliasParser = new ParentClassBeanAliasParser(this.beanNameGenerator);
+    }
+
+    public DefaultSingletonBeanRegistry(
+            BeanClassScanner beanClassScanner,
+            BeanNameGenerator beanNameGenerator,
+            BeanInstantiationStrategy beanInstantiationStrategy,
+            BeanAliasParser beanAliasParser
+    ) {
+        this.beanClzScanner = beanClassScanner;
+        this.beanNameGenerator = beanNameGenerator;
+        this.beanInstantiationStrategy = beanInstantiationStrategy;
+        this.beanAliasParser = beanAliasParser;
     }
 
     @Override
@@ -285,41 +302,18 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             beanTypeMap.put(beanName, c);
             beanNameSet.add(beanName);
 
-            // register the interfaces' name as this bean's alias
-            Set<Class<?>> interfaces = new HashSet<>();
+            // register the superClass and interfaces' name as this bean's alias
+            Set<String> aliases = beanAliasParser.parseBeanAliases(c);
 
-            // interfaces that will be collected
-            Queue<Class<?>> toBeAddedInterfaces = new LinkedList<>(Arrays.asList(c.getInterfaces()));
-
-            while (!toBeAddedInterfaces.isEmpty()) {
-                Class<?> f = toBeAddedInterfaces.poll();
-
-                // have seen this interface already
-                if (interfaces.contains(f))
-                    continue;
-
-                interfaces.add(f);
-
-                    /*
-                    check if this interface has parent interfaces, if so, put them into the queue
-                    */
-                Class<?>[] parents = f.getInterfaces();
-                if (parents != null && parents.length > 0) {
-                    toBeAddedInterfaces.addAll(Arrays.asList(parents));
-                }
-            }
-
-            for (Class<?> ic : interfaces) {
-                    /*
-                    if the alias map already had this interface,
-                    this means that two or more beans are sharing the same interface, but
-                    it doesn't necessary cause circular dependency, as long as the different interfaces
-                    are used for injection
-                     */
-                String interfaceName = beanNameGenerator.generateBeanName(ic);
-                beanTypeMap.put(interfaceName, ic);
-                beanAliasMap.computeIfAbsent(interfaceName, k -> new HashSet<>());
-                beanAliasMap.get(interfaceName).add(beanName);
+            /*
+            if the map already contains this alias,
+            this means that two or more beans are sharing the same interface, but
+            it doesn't necessary cause circular dependency, as long as the different interfaces/superclasses
+            are used for injection
+             */
+            for (String al : aliases) {
+                beanAliasMap.computeIfAbsent(al, k -> new HashSet<>());
+                beanAliasMap.get(al).add(beanName);
             }
         }
     }
@@ -415,6 +409,14 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         }
     }
 
+    @Override
+    public void setBeanAliasParser(BeanAliasParser beanAliasParser) {
+        Objects.requireNonNull(beanAliasParser);
+        synchronized (getMutex()) {
+            this.beanAliasParser = beanAliasParser;
+        }
+    }
+
     /** Get object for mutex lock */
     private Object getMutex() {
         return this.mutex;
@@ -433,5 +435,30 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     private void logIfNotMuted(String formatStr, Object... args) {
         if (!isLogMuted.get())
             info(logger, formatStr, args);
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    @Override
+    public BeanClassScanner getBeanClzScanner() {
+        return beanClzScanner;
+    }
+
+    @Override
+    public BeanNameGenerator getBeanNameGenerator() {
+        return beanNameGenerator;
+    }
+
+    @Override
+    public BeanInstantiationStrategy getBeanInstantiationStrategy() {
+        return beanInstantiationStrategy;
+    }
+
+    @Override
+    public BeanAliasParser getBeanAliasParser() {
+        return beanAliasParser;
     }
 }

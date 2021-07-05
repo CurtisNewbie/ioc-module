@@ -12,6 +12,9 @@ public class ServiceAggregator implements KnowWhoIAm {
     @Autowired
     private AuthenticationManager authenticationManager;
 
+    @Autowired
+    private AbstractManager abstractManager;
+
     @Dependency
     private UserServiceImpl userServiceImpl;
 
@@ -42,10 +45,19 @@ public class ServiceAggregator implements KnowWhoIAm {
         this.authenticationManager = authenticationManager;
     }
 
+    public AbstractManager getAbstractManager() {
+        return abstractManager;
+    }
+
+    public void setAbstractManager(AbstractManager abstractManager) {
+        this.abstractManager = abstractManager;
+    }
+
     @Override
     public String toString() {
         return "ServiceAggregator{" +
                 "authenticationManager=" + authenticationManager +
+                ", abstractManager=" + abstractManager +
                 ", userServiceImpl=" + userServiceImpl +
                 ", service=" + service +
                 '}';

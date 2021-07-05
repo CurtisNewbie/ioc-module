@@ -7,7 +7,7 @@ import com.curtisnewbie.module.ioc.annotations.MBean;
  * @author yongjie.zhuang
  */
 @MBean
-public class AuthenticationManager implements KnowWhoIAm {
+public class AuthenticationManager extends AbstractManager implements KnowWhoIAm {
 
     @Dependency
     private UserService userService;

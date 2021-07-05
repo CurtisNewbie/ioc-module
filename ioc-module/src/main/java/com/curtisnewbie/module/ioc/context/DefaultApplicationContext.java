@@ -14,7 +14,7 @@ import java.util.Objects;
 public class DefaultApplicationContext extends AbstractApplicationContext {
 
     /** Registry of singleton beans */
-    private final SingletonBeanRegistry singletonBeanRegistry;
+    private final ConfigurableSingletonBeanRegistry singletonBeanRegistry;
     private List<BeanPostProcessor> beanPostProcessorList;
     private final BeanDependencyParser beanDependencyParser;
     private final BeanNameGenerator beanNameGenerator;

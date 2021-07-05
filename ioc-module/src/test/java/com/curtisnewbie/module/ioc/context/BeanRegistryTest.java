@@ -304,6 +304,7 @@ public class BeanRegistryTest {
         ServiceAggregator serviceAggregator = registry.getBeanByClass(ServiceAggregator.class);
         Assertions.assertNotNull(serviceAggregator, "Bean not found after initialisation, might have a bug");
         Assertions.assertNotNull(serviceAggregator.getAuthenticationManager(), "Didn't inject dependent, might have a bug");
+        Assertions.assertNotNull(serviceAggregator.getAbstractManager(), "Didn't inject dependent, might have a bug");
         Assertions.assertNotNull(serviceAggregator.getService(), "Didn't inject dependent, might have a bug");
         Assertions.assertNotNull(serviceAggregator.getUserServiceImpl(), "Didn't inject dependent, might have a bug");
 
