@@ -19,7 +19,7 @@ import static java.lang.String.format;
  *
  * @author yongjie.zhuang
  */
-public class DefaultSingletonBeanRegistry implements ConfigurableSingletonBeanRegistry {
+public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
     private static final Logger logger = LogUtil.getLogger(DefaultSingletonBeanRegistry.class);
     private final AtomicBoolean isLogMuted = new AtomicBoolean(false);
@@ -86,21 +86,13 @@ public class DefaultSingletonBeanRegistry implements ConfigurableSingletonBeanRe
     /*
     Configurable components, which are also the potential extension points
      */
-    private BeanClassScanner beanClzScanner;
-    private BeanNameGenerator beanNameGenerator;
-    private BeanInstantiationStrategy beanInstantiationStrategy;
-    private BeanAliasParser beanAliasParser;
+    private final BeanClassScanner beanClzScanner;
+    private final BeanNameGenerator beanNameGenerator;
+    private final BeanInstantiationStrategy beanInstantiationStrategy;
+    private final BeanAliasParser beanAliasParser;
 
     /** Indicate whether this registry is initialized, registry can only be initialised for once */
     private boolean isInitialised = false;
-
-    public DefaultSingletonBeanRegistry() {
-        // fallback to default implementation
-        this.beanClzScanner = new AnnotatedBeanClassScanner();
-        this.beanNameGenerator = new BeanQualifiedNameGenerator();
-        this.beanInstantiationStrategy = new DefaultConstructorInstantiationStrategy();
-        this.beanAliasParser = new ParentClassBeanAliasParser(this.beanNameGenerator);
-    }
 
     public DefaultSingletonBeanRegistry(
             BeanClassScanner beanClassScanner,
@@ -352,17 +344,6 @@ public class DefaultSingletonBeanRegistry implements ConfigurableSingletonBeanRe
         }
     }
 
-    @Override
-    public void registerBeanPostProcessor(List<BeanPostProcessor> beanPostProcessorList) {
-        Objects.requireNonNull(beanPostProcessorList);
-        if (!beanPostProcessorList.isEmpty()) {
-            synchronized (getMutex()) {
-                this.beanPostProcessors.addAll(beanPostProcessorList);
-            }
-        }
-    }
-
-
     /** Find actual implementation bean's name by a possible alias */
     private String findNameOfPossibleBeanAlias(String beanAlias) {
         Objects.requireNonNull(beanAlias);
@@ -384,50 +365,15 @@ public class DefaultSingletonBeanRegistry implements ConfigurableSingletonBeanRe
         return actualBeanNames.iterator().next();
     }
 
-    /** Set {@link BeanClassScanner} to be used by the registry, should invoke this before {@link #loadBeanRegistry()} */
-    @Override
-    public void setBeanClassScanner(BeanClassScanner beanClassScanner) {
-        Objects.requireNonNull(beanClassScanner);
-        synchronized (getMutex()) {
-            this.beanClzScanner = beanClassScanner;
-        }
-    }
-
-    @Override
-    public void setBeanInstantiationStrategy(BeanInstantiationStrategy beanInstantiationStrategy) {
-        Objects.requireNonNull(beanInstantiationStrategy);
-        synchronized (getMutex()) {
-            this.beanInstantiationStrategy = beanInstantiationStrategy;
-        }
-    }
-
-    @Override
-    public void setBeanNameGenerator(BeanNameGenerator beanNameGenerator) {
-        Objects.requireNonNull(beanNameGenerator);
-        synchronized (getMutex()) {
-            this.beanNameGenerator = beanNameGenerator;
-        }
-    }
-
-    @Override
-    public void setBeanAliasParser(BeanAliasParser beanAliasParser) {
-        Objects.requireNonNull(beanAliasParser);
-        synchronized (getMutex()) {
-            this.beanAliasParser = beanAliasParser;
-        }
-    }
-
     /** Get object for mutex lock */
     private Object getMutex() {
         return this.mutex;
     }
 
-    @Override
     public boolean canMuteLog() {
         return true;
     }
 
-    @Override
     public void muteLog() {
         isLogMuted.compareAndSet(false, true);
     }
@@ -438,27 +384,10 @@ public class DefaultSingletonBeanRegistry implements ConfigurableSingletonBeanRe
     }
 
     @Override
-    public ClassLoader getClassLoader() {
-        return classLoader;
-    }
-
-    @Override
-    public BeanClassScanner getBeanClzScanner() {
-        return beanClzScanner;
-    }
-
-    @Override
-    public BeanNameGenerator getBeanNameGenerator() {
-        return beanNameGenerator;
-    }
-
-    @Override
-    public BeanInstantiationStrategy getBeanInstantiationStrategy() {
-        return beanInstantiationStrategy;
-    }
-
-    @Override
-    public BeanAliasParser getBeanAliasParser() {
-        return beanAliasParser;
+    public void registerBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
+        Objects.requireNonNull(beanPostProcessor);
+        synchronized (getMutex()) {
+            this.beanPostProcessors.add(beanPostProcessor);
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.processing.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -14,30 +15,50 @@ import java.util.Objects;
 public class DefaultApplicationContext extends AbstractApplicationContext {
 
     /** Registry of singleton beans */
-    private final ConfigurableSingletonBeanRegistry singletonBeanRegistry;
+    private final SingletonBeanRegistry singletonBeanRegistry;
     private List<BeanPostProcessor> beanPostProcessorList;
     private final BeanDependencyParser beanDependencyParser;
     private final BeanNameGenerator beanNameGenerator;
+    private final BeanClassScanner beanClassScanner;
+    private final BeanInstantiationStrategy beanInstantiationStrategy;
+    private final BeanAliasParser beanAliasParser;
 
-    public DefaultApplicationContext() {
-        this.beanNameGenerator = new BeanQualifiedNameGenerator();
-        this.singletonBeanRegistry = new DefaultSingletonBeanRegistry();
-        this.singletonBeanRegistry.setBeanNameGenerator(beanNameGenerator);
-        this.beanDependencyParser = new AnnotatedBeanDependencyParser(beanNameGenerator);
-        // this order matters
+    public DefaultApplicationContext(
+            BeanDependencyParser beanDependencyParser,
+            BeanNameGenerator beanNameGenerator, BeanClassScanner beanClassScanner,
+            BeanInstantiationStrategy beanInstantiationStrategy,
+            BeanAliasParser beanAliasParser,
+            List<BeanPostProcessor> extraBeanPostProcessors
+    ) {
+        this.beanDependencyParser = beanDependencyParser;
+        this.beanNameGenerator = beanNameGenerator;
+        this.beanClassScanner = beanClassScanner;
+        this.beanInstantiationStrategy = beanInstantiationStrategy;
+        this.beanAliasParser = beanAliasParser;
+        // create bean registry
+        this.singletonBeanRegistry = new DefaultSingletonBeanRegistry(
+                this.beanClassScanner,
+                this.beanNameGenerator,
+                this.beanInstantiationStrategy,
+                this.beanAliasParser
+        );
+        // create a list of bean post processors, note that this order matters
         this.beanPostProcessorList = Arrays.asList(
                 new DependencyInjectionBeanPostProcessor(singletonBeanRegistry, beanDependencyParser),
                 new ApplicationContextAwareBeanPostProcessor(this),
                 new BeanRegistryAwareBeanPostProcessor(this.singletonBeanRegistry)
         );
+        // add more bean post processors if provided
+        if (extraBeanPostProcessors != null)
+            this.beanPostProcessorList.addAll(extraBeanPostProcessors);
+
+        // register bean post processors
+        for (BeanPostProcessor bpp : beanPostProcessorList)
+            this.singletonBeanRegistry.registerBeanPostProcessor(bpp);
     }
 
     @Override
     protected void initializeContext() {
-        if (singletonBeanRegistry.canMuteLog() && isLogMuted())
-            singletonBeanRegistry.muteLog();
-        // register bean post processors
-        this.singletonBeanRegistry.registerBeanPostProcessor(beanPostProcessorList);
         // register singleton beans that have been created, e.g., this ApplicationContext
         this.singletonBeanRegistry.registerSingletonBean(ApplicationContext.class, this);
         // starts bean scanning, instantiation, and dependency injection
@@ -49,9 +70,4 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         return singletonBeanRegistry;
     }
 
-    @Override
-    public void registerBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
-        Objects.requireNonNull(beanPostProcessor);
-        this.beanPostProcessorList.add(beanPostProcessor);
-    }
 }

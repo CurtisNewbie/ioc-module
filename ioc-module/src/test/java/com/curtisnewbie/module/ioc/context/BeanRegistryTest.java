@@ -6,6 +6,7 @@ import com.curtisnewbie.module.ioc.beans.casees.normal.*;
 import com.curtisnewbie.module.ioc.exceptions.CircularDependencyException;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
 import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
+import com.curtisnewbie.module.ioc.processing.BeanClassScanner;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -24,7 +25,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotAccessibleProperty() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithNotAccessibleField.class, EmptyBean.class);
 
         Assertions.assertThrows(UnableToInjectDependencyException.class, () -> {
@@ -36,7 +37,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldNotAllowInterfaceWithMBeanAnnotation() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, InterfaceWithMBean.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -48,7 +49,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableIntType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithInt.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -60,7 +61,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableIntegerType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithBoxedInteger.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -72,7 +73,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableStringType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithString.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -84,7 +85,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableBoxedDoubleType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithBoxedDouble.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -96,7 +97,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableDoubleType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithDouble.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -108,7 +109,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableBoxedCharType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithBoxedChar.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -120,7 +121,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableCharType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithChar.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -132,7 +133,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableBoxedLongType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithBoxedLong.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -144,7 +145,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableLongType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithLong.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -156,7 +157,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableBoxedFloatType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithBoxedFloat.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -168,7 +169,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableFloatType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithFloat.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -180,7 +181,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableBoxedShortType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithBoxedShort.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -192,7 +193,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableShortType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithShort.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -204,7 +205,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableBoxedByteType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithBoxedByte.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -216,7 +217,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectNotInjectableByteType() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithByte.class);
 
         Assertions.assertThrows(TypeNotSupportedForInjectionException.class, () -> {
@@ -228,7 +229,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectDirectCircularDependencies() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 DirectCircularDependencyServiceAImpl.class,
                 DirectCircularDependencyServiceBImpl.class);
@@ -242,7 +243,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldDetectIndirectCircularDependencies() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 IndirectCircularDependencyServiceAImpl.class,
                 IndirectCircularDependencyServiceBImpl.class,
@@ -257,7 +258,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldInjectContextRelatedBeans() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 BeanWithContextBeans.class);
 
@@ -274,7 +275,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldSetContextRelatedBeansThroughAwareInterfaces() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 ContextAwareBean.class);
 
@@ -291,7 +292,7 @@ public class BeanRegistryTest {
 
     @Test
     public void shouldSuccessfullyInitialised() {
-        ContextInitializer contextInitializer = ContextFactory.getNewContextInitializer();
+        ConfigurableContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 AuthenticationManager.class,
                 UserServiceImpl.class,
@@ -315,16 +316,16 @@ public class BeanRegistryTest {
     }
 
     private void setupMockScanner(ContextInitializer mockedInitializer, Class<?>... clazzToBeFound) {
-        if (mockedInitializer.canMuteLog())
-            mockedInitializer.muteLog();
-        DefaultSingletonBeanRegistry singletonBeanRegistry = DefaultSingletonBeanRegistry.class.cast(
-                ApplicationContext.class.cast(mockedInitializer)
-                        .getBeanRegistry()
-        );
+        ConfigurableContextInitializer ctx = (ConfigurableContextInitializer) mockedInitializer;
+        if (ctx.canMuteLog())
+            ctx.muteLog();
+
         MockBeanClassScanner mockBeanClassScanner = new MockBeanClassScanner();
         if (clazzToBeFound.length > 0)
             mockBeanClassScanner.setBeanClassesFound(new HashSet<>(Arrays.asList(clazzToBeFound)));
-        singletonBeanRegistry.setBeanClassScanner(mockBeanClassScanner);
+
+        // set the mocked beanClassScanner
+        ctx.registerBeanClassScanner(mockBeanClassScanner);
     }
 
 }

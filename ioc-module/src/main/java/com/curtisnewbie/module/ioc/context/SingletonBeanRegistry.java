@@ -1,5 +1,8 @@
 package com.curtisnewbie.module.ioc.context;
 
+import com.curtisnewbie.module.ioc.config.LogMutable;
+import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
+
 /**
  * Registry of singleton beans
  * <p>
@@ -8,7 +11,7 @@ package com.curtisnewbie.module.ioc.context;
  *
  * @author yongjie.zhuang
  */
-public interface SingletonBeanRegistry extends BeanRegistry {
+public interface SingletonBeanRegistry extends BeanRegistry, LogMutable {
 
     /**
      * Get bean's name by the name that is possibly an alias
@@ -65,4 +68,9 @@ public interface SingletonBeanRegistry extends BeanRegistry {
      * Which includes scanning beans' classes, instantiating beans and injecting their dependencies
      */
     void loadBeanRegistry();
+
+    /**
+     * Register bean post processor
+     */
+    void registerBeanPostProcessor(BeanPostProcessor beanPostProcessor);
 }
