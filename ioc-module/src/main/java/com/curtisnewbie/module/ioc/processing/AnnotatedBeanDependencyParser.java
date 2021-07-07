@@ -12,6 +12,8 @@ import com.curtisnewbie.module.ioc.util.BeansUtil;
 import java.beans.PropertyDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -43,9 +45,12 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
                 PropertyDescriptor pd = pdMap.get(f.getName());
                 // if pd == null, means there is not getter and setter for this field at all
                 // as long as the writerMethod is missing, this field is not injectable
-                if (pd == null || pd.getWriteMethod() == null) {
+                Method writeMethod;
+                if (pd == null
+                        || (writeMethod = pd.getWriteMethod()) == null
+                        || Modifier.isPrivate(writeMethod.getModifiers())) {
                     throw new UnableToInjectDependencyException(
-                            String.format("Unable to inject dependency, field: '%s' not accessible, setter method is missing",
+                            String.format("Unable to inject dependency, field: '%s' not accessible, setter method is missing or private",
                                     f.getName())
                     );
                 }

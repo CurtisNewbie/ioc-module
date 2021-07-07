@@ -24,6 +24,18 @@ public class BeanRegistryTest {
     private static final Logger logger = Logger.getLogger(BeanRegistryTest.class.toString());
 
     @Test
+    public void shouldDetectNotAccessibleWriteMethod() {
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithNotAccessibleWriteMethod.class, EmptyBean.class);
+
+        Assertions.assertThrows(UnableToInjectDependencyException.class, () -> {
+            contextInitializer.initialize(BeanRegistryTest.class);
+        }, "Should detect not accessible field, might have a bug");
+
+        logger.info("Test passed");
+    }
+
+    @Test
     public void shouldDetectNotAccessibleProperty() {
         ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer, BeanWithNotAccessibleField.class, EmptyBean.class);

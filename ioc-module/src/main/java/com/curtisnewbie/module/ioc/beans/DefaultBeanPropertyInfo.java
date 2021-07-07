@@ -62,7 +62,9 @@ public class DefaultBeanPropertyInfo implements BeanPropertyInfo {
     public void setValueToPropertyOfBean(Object targetObject, Object value) {
         try {
             Method writeMethod = propertyDescriptor.getWriteMethod();
-            writeMethod.setAccessible(true);
+            Objects.requireNonNull(writeMethod,
+                    String.format("Unable to inject dependency in field: %s, writeMethod is not found", getPropertyName())
+            );
             writeMethod.invoke(targetObject, value);
         } catch (ReflectiveOperationException e) {
             throw new UnableToInjectDependencyException("Unable to inject dependency in field: " + getPropertyName());
