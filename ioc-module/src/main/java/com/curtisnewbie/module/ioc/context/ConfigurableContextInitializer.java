@@ -52,5 +52,10 @@ public interface ConfigurableContextInitializer extends ContextInitializer {
      */
     void registerBeanAliasParser(BeanAliasParser beanAliasParser);
 
+    /**
+     * Register a {@link PropertyRegistry} to be used by the context
+     */
+    void registerPropertyRegistry(PropertyRegistry propertyRegistry);
+
 }
 

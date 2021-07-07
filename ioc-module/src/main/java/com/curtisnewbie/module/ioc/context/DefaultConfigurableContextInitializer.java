@@ -17,6 +17,7 @@ public class DefaultConfigurableContextInitializer implements ConfigurableContex
     private BeanClassScanner beanClassScanner;
     private BeanInstantiationStrategy beanInstantiationStrategy;
     private BeanAliasParser beanAliasParser;
+    private PropertyRegistry propertyRegistry;
 
     private boolean isLogMuted = false;
 
@@ -33,6 +34,8 @@ public class DefaultConfigurableContextInitializer implements ConfigurableContex
             this.beanInstantiationStrategy = new DefaultConstructorInstantiationStrategy();
         if (this.beanAliasParser == null)
             this.beanAliasParser = new ParentClassBeanAliasParser(beanNameGenerator);
+        if (this.propertyRegistry == null)
+            this.propertyRegistry = new DefaultPropertyRegistry();
 
         DefaultApplicationContext ctx = new DefaultApplicationContext(
                 this.beanDependencyParser,
@@ -40,7 +43,8 @@ public class DefaultConfigurableContextInitializer implements ConfigurableContex
                 this.beanClassScanner,
                 this.beanInstantiationStrategy,
                 this.beanAliasParser,
-                this.beanPostProcessorList
+                this.beanPostProcessorList,
+                this.propertyRegistry
         );
         // mute its log if necessary
         if (isLogMuted && ctx.canMuteLog())
@@ -83,6 +87,12 @@ public class DefaultConfigurableContextInitializer implements ConfigurableContex
     public void registerBeanAliasParser(BeanAliasParser beanAliasParser) {
         Objects.requireNonNull(beanAliasParser);
         this.beanAliasParser = beanAliasParser;
+    }
+
+    @Override
+    public void registerPropertyRegistry(PropertyRegistry propertyRegistry) {
+        Objects.requireNonNull(propertyRegistry);
+        this.propertyRegistry = propertyRegistry;
     }
 
     @Override

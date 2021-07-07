@@ -16,7 +16,7 @@ public interface PropertyRegistry {
     Object getProperty(String key);
 
     /**
-     * Set property
+     * Set property, if the key exists already, if may simply replace the value
      *
      * @param key   key
      * @param value value

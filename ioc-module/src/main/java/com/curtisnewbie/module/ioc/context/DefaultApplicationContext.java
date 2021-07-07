@@ -2,7 +2,6 @@ package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.processing.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -22,19 +21,30 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
     private final BeanClassScanner beanClassScanner;
     private final BeanInstantiationStrategy beanInstantiationStrategy;
     private final BeanAliasParser beanAliasParser;
+    private final PropertyRegistry propertyRegistry;
 
     public DefaultApplicationContext(
             BeanDependencyParser beanDependencyParser,
             BeanNameGenerator beanNameGenerator, BeanClassScanner beanClassScanner,
             BeanInstantiationStrategy beanInstantiationStrategy,
             BeanAliasParser beanAliasParser,
-            List<BeanPostProcessor> extraBeanPostProcessors
+            List<BeanPostProcessor> extraBeanPostProcessors,
+            PropertyRegistry propertyRegistry
     ) {
+        checkNonNull(beanDependencyParser,
+                beanNameGenerator,
+                beanClassScanner,
+                beanInstantiationStrategy,
+                beanAliasParser,
+                propertyRegistry
+        );
         this.beanDependencyParser = beanDependencyParser;
         this.beanNameGenerator = beanNameGenerator;
         this.beanClassScanner = beanClassScanner;
         this.beanInstantiationStrategy = beanInstantiationStrategy;
         this.beanAliasParser = beanAliasParser;
+        this.propertyRegistry = propertyRegistry;
+
         // create bean registry
         this.singletonBeanRegistry = new DefaultSingletonBeanRegistry(
                 this.beanClassScanner,
@@ -45,6 +55,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         // create a list of bean post processors, note that this order matters
         this.beanPostProcessorList = Arrays.asList(
                 new DependencyInjectionBeanPostProcessor(singletonBeanRegistry, beanDependencyParser),
+                new PropertyValueBeanPostProcessor(propertyRegistry),
                 new ApplicationContextAwareBeanPostProcessor(this),
                 new BeanRegistryAwareBeanPostProcessor(this.singletonBeanRegistry)
         );
@@ -76,6 +87,12 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
     @Override
     public PropertyRegistry getPropertyRegistry() {
         return null;
+    }
+
+    private void checkNonNull(Object... objs) {
+        for (Object o : objs) {
+            Objects.requireNonNull(o);
+        }
     }
 
 }
