@@ -6,7 +6,6 @@ import com.curtisnewbie.module.ioc.beans.casees.normal.*;
 import com.curtisnewbie.module.ioc.exceptions.CircularDependencyException;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
 import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
-import com.curtisnewbie.module.ioc.processing.BeanClassScanner;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -316,6 +315,8 @@ public class BeanRegistryTest {
         Assertions.assertNotNull(beanWithProp.getBeanName(), "Bean property not injected, might have a bug");
         Assertions.assertNotNull(beanWithProp.getBeanVersion(), "Bean property not injected, might have a bug");
         Assertions.assertNotNull(beanWithProp.getCreatedBy(), "Bean property not injected, might have a bug");
+
+        logger.info("Test passed");
     }
 
     @Test
@@ -341,6 +342,7 @@ public class BeanRegistryTest {
         Service service = registry.getBeanByClass(Service.class);
         Assertions.assertNotNull(service, "Bean not found after initialisation, might have a bug");
 
+        logger.info("Test passed");
     }
 
     private void setupMockScanner(ContextInitializer mockedInitializer, Class<?>... clazzToBeFound) {
