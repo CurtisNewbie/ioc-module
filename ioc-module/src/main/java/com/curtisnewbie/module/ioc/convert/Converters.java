@@ -14,9 +14,13 @@ public final class Converters {
     static {
         Map<Class<?>, StringToVConverter<?>> tempMap = new HashMap<>();
         tempMap.put(Integer.class, new StringToIntegerConverter());
+        tempMap.put(int.class, new StringToIntegerConverter());
         tempMap.put(Double.class, new StringToDoubleConverter());
+        tempMap.put(double.class, new StringToDoubleConverter());
         tempMap.put(Long.class, new StringToLongConverter());
+        tempMap.put(long.class, new StringToLongConverter());
         tempMap.put(Short.class, new StringToShortConverter());
+        tempMap.put(short.class, new StringToShortConverter());
         tempMap.put(String.class, new StringToStringConverter());
         supportedConverters = Collections.unmodifiableMap(tempMap);
     }
