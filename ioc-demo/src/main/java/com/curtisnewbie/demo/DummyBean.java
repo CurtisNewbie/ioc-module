@@ -2,6 +2,7 @@ package com.curtisnewbie.demo;
 
 import com.curtisnewbie.module.ioc.annotations.Dependency;
 import com.curtisnewbie.module.ioc.annotations.MBean;
+import com.curtisnewbie.module.ioc.annotations.PropertyValue;
 import com.curtisnewbie.module.ioc.context.ApplicationContext;
 import com.curtisnewbie.module.ioc.context.BeanRegistry;
 
@@ -10,6 +11,12 @@ import com.curtisnewbie.module.ioc.context.BeanRegistry;
  */
 @MBean
 public class DummyBean implements HasName {
+
+    @PropertyValue("dummy.name")
+    private String dummyName;
+
+    @PropertyValue("dummy.age")
+    private int dummyAge;
 
     @Dependency
     private MaskedTommy maskedTommy;
@@ -44,13 +51,30 @@ public class DummyBean implements HasName {
         this.beanRegistry = beanRegistry;
     }
 
+    public int getDummyAge() {
+        return dummyAge;
+    }
+
+    public void setDummyAge(int dummyAge) {
+        this.dummyAge = dummyAge;
+    }
+
+    public String getDummyName() {
+        return dummyName;
+    }
+
+    public void setDummyName(String dummyName) {
+        this.dummyName = dummyName;
+    }
+
     @Override
     public String toString() {
         return "DummyBean{" +
-                "maskedTommy=" + maskedTommy +
+                "dummyName='" + dummyName + '\'' +
+                ", dummyAge=" + dummyAge +
+                ", maskedTommy=" + maskedTommy +
                 ", applicationContext=" + applicationContext +
                 ", beanRegistry=" + beanRegistry +
                 '}';
     }
-
 }
