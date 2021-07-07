@@ -62,7 +62,8 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
     /**
      * Check if the log is supposed to be muted
      */
-    protected boolean isLogMuted() {
+    @Override
+    public boolean isLogMuted() {
         return isLogMuted.get();
     }
 

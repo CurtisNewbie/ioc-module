@@ -59,6 +59,9 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     @Override
     protected void initializeContext() {
+        // mute the beanRegistry if necessary
+        if (this.singletonBeanRegistry.canMuteLog() && isLogMuted())
+            this.singletonBeanRegistry.muteLog();
         // register singleton beans that have been created, e.g., this ApplicationContext
         this.singletonBeanRegistry.registerSingletonBean(ApplicationContext.class, this);
         // starts bean scanning, instantiation, and dependency injection

@@ -372,16 +372,23 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         return this.mutex;
     }
 
+    @Override
     public boolean canMuteLog() {
         return true;
     }
 
+    @Override
     public void muteLog() {
-        isLogMuted.compareAndSet(false, true);
+        isLogMuted.set(true);
+    }
+
+    @Override
+    public boolean isLogMuted() {
+        return isLogMuted.get();
     }
 
     private void logIfNotMuted(String formatStr, Object... args) {
-        if (!isLogMuted.get())
+        if (!isLogMuted())
             info(logger, formatStr, args);
     }
 
