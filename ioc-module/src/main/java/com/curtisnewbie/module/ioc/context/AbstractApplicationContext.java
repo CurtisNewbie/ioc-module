@@ -30,6 +30,10 @@ public abstract class AbstractApplicationContext implements ApplicationContext, 
             this.mainClazz = mainClazz;
         }
 
+        if (!isLogMuted.get()) {
+            LogUtil.info(logger, "ApplicationContext initialization starts");
+        }
+
         // start timer
         CountdownTimer timer = new CountdownTimer().start();
 
