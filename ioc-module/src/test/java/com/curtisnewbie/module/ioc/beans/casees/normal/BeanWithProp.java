@@ -18,6 +18,9 @@ public class BeanWithProp implements KnowWhoIAm {
     @PropertyValue("test.bean-version")
     private Integer beanVersion;
 
+    @PropertyValue(value = "test.bean-description", required = false)
+    private Integer beanNullableDescription;
+
     public String getBeanName() {
         return beanName;
     }
@@ -48,6 +51,15 @@ public class BeanWithProp implements KnowWhoIAm {
                 "beanName='" + beanName + '\'' +
                 ", createdBy='" + createdBy + '\'' +
                 ", beanVersion=" + beanVersion +
+                ", beanNullableDescription=" + beanNullableDescription +
                 '}';
+    }
+
+    public Integer getBeanNullableDescription() {
+        return beanNullableDescription;
+    }
+
+    public void setBeanNullableDescription(Integer beanNullableDescription) {
+        this.beanNullableDescription = beanNullableDescription;
     }
 }
