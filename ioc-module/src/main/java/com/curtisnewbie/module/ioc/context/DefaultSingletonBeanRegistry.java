@@ -343,6 +343,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                         + " should not return null object after processing");
                 this.beanInstanceMap.replace(bean.getKey(), processedObj);
             }
+            logIfNotMuted("Applied BeanPostProcessor: '%s'", p.getClass().getName());
         }
     }
 
