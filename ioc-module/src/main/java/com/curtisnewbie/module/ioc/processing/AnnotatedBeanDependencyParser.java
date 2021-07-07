@@ -23,10 +23,9 @@ import java.util.*;
  */
 public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
 
-    private List<Class<? extends Annotation>> injectableAnnotations = Collections.unmodifiableList(Arrays.asList(
+    private Set<Class<? extends Annotation>> injectableAnnotations = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
             Dependency.class
-            )
-    );
+    )));
     private final BeanNameGenerator beanNameGenerator;
 
     public AnnotatedBeanDependencyParser(BeanNameGenerator beanNameGenerator) {
@@ -36,7 +35,7 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
     private Map<String, List<BeanPropertyInfo>> parseDependenciesOfClass(Class<?> clz) {
         Objects.requireNonNull(clz, "class is null, unable to parse dependencies");
         Map<String, List<BeanPropertyInfo>> dependencies = new HashMap<>();
-        Map<String, PropertyDescriptor> pdMap = propertyDescriptorsToMap(BeansUtil.introspectPropertyDescriptors(clz));
+        Map<String, PropertyDescriptor> pdMap = BeansUtil.introspectPropertyDescriptorMap(clz);
 
         Field[] fields = clz.getDeclaredFields();
         for (Field f : fields) {
@@ -134,40 +133,19 @@ public class AnnotatedBeanDependencyParser implements BeanDependencyParser {
         return false;
     }
 
-    /**
-     * Load array of PropertyDescriptor to map, where the key is the property name, and the value is the
-     * PropertyDescriptor
-     */
-    private Map<String, PropertyDescriptor> propertyDescriptorsToMap(PropertyDescriptor[] pds) {
-        Map<String, PropertyDescriptor> pdMap = new HashMap<>();
-        for (PropertyDescriptor pd : pds) {
-            pdMap.put(pd.getName(), pd);
-        }
-        return pdMap;
-    }
-
     /** check if an injectable annotation is present */
     private boolean isInjectableAnnotationPresent(Annotation[] annotations) {
         for (Annotation annt : annotations) {
             // the annotation itself is a supported annotation
-            if (isSupported(annt.annotationType())) {
+            if (injectableAnnotations.contains(annt.annotationType())) {
                 return true;
             }
 
             // for composed annotation, see if this annotation has any other annotation that is supported
             for (Annotation composed : annt.annotationType().getDeclaredAnnotations()) {
-                if (isSupported(composed.annotationType())) {
+                if (injectableAnnotations.contains(composed.annotationType())) {
                     return true;
                 }
-            }
-        }
-        return false;
-    }
-
-    private boolean isSupported(Class<? extends Annotation> annotationClz) {
-        for (Class<? extends Annotation> supportedAnnotationClz : injectableAnnotations) {
-            if (annotationClz.equals(supportedAnnotationClz)) {
-                return true;
             }
         }
         return false;

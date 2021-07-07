@@ -13,6 +13,11 @@ public interface ApplicationContext {
     BeanRegistry getBeanRegistry();
 
     /**
+     * Get property registry
+     */
+    PropertyRegistry getPropertyRegistry();
+
+    /**
      * Get main class
      */
     Class<?> getMainClazz();

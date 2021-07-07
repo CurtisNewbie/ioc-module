@@ -73,4 +73,9 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         return singletonBeanRegistry;
     }
 
+    @Override
+    public PropertyRegistry getPropertyRegistry() {
+        return null;
+    }
+
 }
