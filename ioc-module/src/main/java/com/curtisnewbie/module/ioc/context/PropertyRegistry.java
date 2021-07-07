@@ -13,7 +13,7 @@ public interface PropertyRegistry {
      * @param key key
      * @return value
      */
-    Object getProperty(String key);
+    String getProperty(String key);
 
     /**
      * Set property, if the key exists already, if may simply replace the value
@@ -21,7 +21,7 @@ public interface PropertyRegistry {
      * @param key   key
      * @param value value
      */
-    void setProperty(String key, Object value);
+    void putProperty(String key, String value);
 
     /**
      * Check if the registry contains the property

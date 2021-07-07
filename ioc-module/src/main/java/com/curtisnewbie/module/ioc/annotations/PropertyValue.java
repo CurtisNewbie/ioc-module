@@ -19,7 +19,7 @@ public @interface PropertyValue {
     String value();
 
     /**
-     * Set whether the property is required
+     * Set whether the property is required, by default it's true
      */
-    boolean required();
+    boolean required() default true;
 }

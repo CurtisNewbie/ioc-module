@@ -1,6 +1,7 @@
 package com.curtisnewbie.module.ioc.util;
 
 import org.reflections.Reflections;
+import org.reflections.scanners.ResourcesScanner;
 import org.reflections.scanners.SubTypesScanner;
 import org.reflections.scanners.TypeAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
@@ -124,6 +125,22 @@ public final class ReflectionsScanUtil {
                 .setUrls(ClasspathHelper.forPackage(packageUrl))
                 .addClassLoader(classLoader)
                 .addScanners(new SubTypesScanner()));
+        return r;
+    }
+
+    /**
+     * Get {@code Reflections} for non-class resource scanning, which can be reused
+     *
+     * @param packageUrl  package url to scan
+     * @param classLoader classloader to use
+     * @return reflections object
+     */
+    public static Reflections getReflectionsForResourcesScanning(String packageUrl,
+                                                                 ClassLoader classLoader) {
+        Reflections r = new Reflections(new ConfigurationBuilder()
+                .setUrls(ClasspathHelper.forPackage(packageUrl))
+                .addClassLoader(classLoader)
+                .addScanners(new ResourcesScanner()));
         return r;
     }
 }

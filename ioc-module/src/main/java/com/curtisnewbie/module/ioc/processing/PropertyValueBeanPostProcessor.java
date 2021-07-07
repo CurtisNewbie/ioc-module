@@ -2,6 +2,7 @@ package com.curtisnewbie.module.ioc.processing;
 
 import com.curtisnewbie.module.ioc.annotations.PropertyValue;
 import com.curtisnewbie.module.ioc.context.PropertyRegistry;
+import com.curtisnewbie.module.ioc.convert.Converters;
 import com.curtisnewbie.module.ioc.exceptions.UnableToInjectDependencyException;
 import com.curtisnewbie.module.ioc.util.BeansUtil;
 
@@ -16,6 +17,10 @@ import java.util.*;
  * Implementation of {@link BeanPostProcessor} that injects property's value
  *
  * @author yongjie.zhuang
+ * @see PropertyRegistry
+ * @see com.curtisnewbie.module.ioc.context.LoadablePropertyRegistry
+ * @see com.curtisnewbie.module.ioc.convert.StringToVConverter
+ * @see com.curtisnewbie.module.ioc.convert.Converters
  */
 public class PropertyValueBeanPostProcessor implements BeanPostProcessor {
 
@@ -65,9 +70,21 @@ public class PropertyValueBeanPostProcessor implements BeanPostProcessor {
                                     f.getName())
                     );
                 }
+                Class<?> requiredType = pd.getPropertyType();
+                // check if the required type can be satisfied, we will need to do some type conversion here
+                if (!Converters.support(requiredType)) {
+                    throw new UnableToInjectDependencyException(
+                            String.format("Unable to inject property value in field: '%s', type conversion not supported for %s",
+                                    f.getName(), requiredType.getSimpleName())
+                    );
+                }
+                // convert the given value if necessary
+                String strVal = propertyRegistry.getProperty(propertyKey);
+                Object converted = Converters.getPropertyConverter(requiredType)
+                        .convert(strVal);
                 // try to set the value
                 try {
-                    writeMethod.invoke(bean, propertyRegistry.getProperty(propertyKey));
+                    writeMethod.invoke(bean, converted);
                 } catch (ReflectiveOperationException e) {
                     throw new UnableToInjectDependencyException(
                             String.format("Unable to inject property value in field: '%s' for property: '%s'", f.getName(), propertyKey)

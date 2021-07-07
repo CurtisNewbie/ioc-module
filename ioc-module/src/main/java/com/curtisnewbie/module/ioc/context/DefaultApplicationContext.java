@@ -45,6 +45,9 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         this.beanAliasParser = beanAliasParser;
         this.propertyRegistry = propertyRegistry;
 
+        if (propertyRegistry instanceof LoadablePropertyRegistry)
+            ((LoadablePropertyRegistry) propertyRegistry).loadResourceProperties();
+
         // create bean registry
         this.singletonBeanRegistry = new DefaultSingletonBeanRegistry(
                 this.beanClassScanner,

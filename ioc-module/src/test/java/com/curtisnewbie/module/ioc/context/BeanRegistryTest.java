@@ -303,6 +303,22 @@ public class BeanRegistryTest {
     }
 
     @Test
+    public void shouldInjectPropertyValues() {
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer, BeanWithProp.class);
+
+        ApplicationContext applicationContext = contextInitializer.initialize(BeanRegistryTest.class);
+        BeanRegistry registry = applicationContext.getBeanRegistry();
+
+        // get bean by concrete class
+        BeanWithProp beanWithProp = registry.getBeanByClass(BeanWithProp.class);
+        Assertions.assertNotNull(beanWithProp, "Bean not found after initialisation, might have a bug");
+        Assertions.assertNotNull(beanWithProp.getBeanName(), "Bean property not injected, might have a bug");
+        Assertions.assertNotNull(beanWithProp.getBeanVersion(), "Bean property not injected, might have a bug");
+        Assertions.assertNotNull(beanWithProp.getCreatedBy(), "Bean property not injected, might have a bug");
+    }
+
+    @Test
     public void shouldSuccessfullyInitialised() {
         ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
