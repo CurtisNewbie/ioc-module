@@ -8,8 +8,8 @@ package com.curtisnewbie.module.ioc.context;
 public interface LoadablePropertyRegistry extends PropertyRegistry {
 
     /**
-     * Scan the classpath, load property files in resource folder
+     * Load properties (it's like initializing the PropertyRegistry)
      */
-    void loadResourceProperties();
+    void loadProperties();
 
 }

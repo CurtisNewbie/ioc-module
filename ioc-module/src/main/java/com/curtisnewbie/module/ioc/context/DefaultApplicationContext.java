@@ -46,7 +46,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         this.propertyRegistry = propertyRegistry;
 
         if (propertyRegistry instanceof LoadablePropertyRegistry)
-            ((LoadablePropertyRegistry) propertyRegistry).loadResourceProperties();
+            ((LoadablePropertyRegistry) propertyRegistry).loadProperties();
 
         // create bean registry
         this.singletonBeanRegistry = new DefaultSingletonBeanRegistry(
