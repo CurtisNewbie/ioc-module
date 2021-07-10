@@ -79,7 +79,7 @@ public final class Converters {
     /**
      * Add {@link Converter} for the given types
      * <p>
-     * Method {@link #support(Class, Class)} should be invoked in advance to use if there is already a Converter
+     * Method {@link #support(Class, Class)} should be invoked in advance to check if there is already a Converter
      * supports the given types, if there is a supported converted, the existing one will be replaced.
      * </p>
      *
