@@ -1,11 +1,12 @@
 package com.curtisnewbie.module.ioc.convert;
 
+
 /**
  * Converter for String-Short
  *
  * @author yongjie.zhuang
  */
-public class StringToShortConverter implements StringToVConverter<Short> {
+public class StringToShortConverter implements Converter<String, Short> {
 
     @Override
     public Short convert(String s) {

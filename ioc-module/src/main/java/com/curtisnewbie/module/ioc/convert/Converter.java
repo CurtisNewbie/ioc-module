@@ -5,6 +5,7 @@ package com.curtisnewbie.module.ioc.convert;
  *
  * @author yongjie.zhuang
  */
+@FunctionalInterface
 public interface Converter<T, V> {
 
     /**

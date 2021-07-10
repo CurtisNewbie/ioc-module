@@ -5,7 +5,7 @@ package com.curtisnewbie.module.ioc.convert;
  *
  * @author yongjie.zhuang
  */
-public class StringToLongConverter implements StringToVConverter<Long> {
+public class StringToLongConverter implements Converter<String, Long> {
 
     @Override
     public Long convert(String s) {

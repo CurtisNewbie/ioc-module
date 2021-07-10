@@ -19,7 +19,6 @@ import java.util.*;
  * @author yongjie.zhuang
  * @see PropertyRegistry
  * @see com.curtisnewbie.module.ioc.context.LoadablePropertyRegistry
- * @see com.curtisnewbie.module.ioc.convert.StringToVConverter
  * @see com.curtisnewbie.module.ioc.convert.Converters
  */
 public class PropertyValueBeanPostProcessor implements BeanPostProcessor {
@@ -72,7 +71,7 @@ public class PropertyValueBeanPostProcessor implements BeanPostProcessor {
                 }
                 Class<?> requiredType = pd.getPropertyType();
                 // check if the required type can be satisfied, we will need to do some type conversion here
-                if (!Converters.support(requiredType)) {
+                if (!Converters.support(String.class, requiredType)) {
                     throw new UnableToInjectDependencyException(
                             String.format("Unable to inject property value in field: '%s', type conversion not supported for %s",
                                     f.getName(), requiredType.getSimpleName())
@@ -80,7 +79,7 @@ public class PropertyValueBeanPostProcessor implements BeanPostProcessor {
                 }
                 // convert the given value if necessary
                 String strVal = propertyRegistry.getProperty(propertyKey);
-                Object converted = Converters.getPropertyConverter(requiredType)
+                Object converted = Converters.getConverter(String.class, requiredType)
                         .convert(strVal);
                 // try to set the value
                 try {

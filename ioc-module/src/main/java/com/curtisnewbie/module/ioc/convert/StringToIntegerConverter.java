@@ -5,7 +5,7 @@ package com.curtisnewbie.module.ioc.convert;
  *
  * @author yongjie.zhuang
  */
-public class StringToIntegerConverter implements StringToVConverter<Integer> {
+public class StringToIntegerConverter implements Converter<String, Integer> {
 
     @Override
     public Integer convert(String s) {

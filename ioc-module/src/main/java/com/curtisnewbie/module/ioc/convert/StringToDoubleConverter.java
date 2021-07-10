@@ -5,7 +5,7 @@ package com.curtisnewbie.module.ioc.convert;
  *
  * @author yongjie.zhuang
  */
-public class StringToDoubleConverter implements StringToVConverter<Double> {
+public class StringToDoubleConverter implements Converter<String, Double> {
 
     @Override
     public Double convert(String s) {
