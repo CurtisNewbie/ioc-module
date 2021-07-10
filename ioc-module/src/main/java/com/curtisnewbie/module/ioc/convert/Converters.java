@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class Converters {
 
     /**
-     * outter layer: class (T class) to map of Converter(s) that converts from T class to ? class
+     * outer layer: class (T class) to map of Converter(s) that converts from T class to ? class
      * <p>
      * inner layer: class (V class) to Converter that converts from ? to V class
      */
