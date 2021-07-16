@@ -153,6 +153,33 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     }
 
     @Override
+    public Map<String, Object> getBeansOfType(Class<?> parentType) {
+        Objects.requireNonNull(parentType);
+
+        Map<String, Object> beanNameToObj = new HashMap<>();
+        synchronized (getMutex()) {
+            // if the requested type itself is a implementation bean
+            String parentBeanName = beanNameGenerator.generateBeanName(parentType);
+            Object parentDirectImpl = beanInstanceMap.get(parentBeanName);
+            if (parentDirectImpl != null)
+                beanNameToObj.put(parentBeanName, parentDirectImpl);
+
+            // try to find if any other beans that extend or implement this type
+            Set<String> childBeans = beanAliasMap.get(parentBeanName);
+            if (childBeans != null) {
+                for (String childName : childBeans) {
+                    Object childObj = beanInstanceMap.get(childName);
+                    Objects.requireNonNull(childObj);
+                    if (childObj != parentDirectImpl) {
+                        beanNameToObj.put(childName, childObj);
+                    }
+                }
+            }
+            return beanNameToObj;
+        }
+    }
+
+    @Override
     public void registerDependency(String beanName, String dependentBeanName) {
         Objects.requireNonNull(beanName);
         Objects.requireNonNull(dependentBeanName);

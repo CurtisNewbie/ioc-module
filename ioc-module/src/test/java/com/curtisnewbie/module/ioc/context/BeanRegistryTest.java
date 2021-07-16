@@ -12,6 +12,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -342,6 +343,27 @@ public class BeanRegistryTest {
         Service service = registry.getBeanByClass(Service.class);
         Assertions.assertNotNull(service, "Bean not found after initialisation, might have a bug");
 
+        logger.info("Test passed");
+    }
+
+    @Test
+    public void shouldBeansOfType() {
+        ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
+        setupMockScanner(contextInitializer,
+                AuthenticationManager.class,
+                UserServiceImpl.class,
+                ServiceAggregator.class);
+
+        ApplicationContext applicationContext = contextInitializer.initialize(BeanRegistryTest.class);
+        BeanRegistry registry = applicationContext.getBeanRegistry();
+
+        // get map of beans by a parent type
+        Map<String, Object> beanMap = registry.getBeansOfType(KnowWhoIAm.class);
+        Assertions.assertNotNull(beanMap, "#getBeansOfType should not return null");
+        Assertions.assertFalse(beanMap.isEmpty());
+        for (Map.Entry<String, Object> bean : beanMap.entrySet()) {
+            Assertions.assertNotNull(bean.getValue(), "Bean instance of " + bean.getKey() + " should not be null");
+        }
         logger.info("Test passed");
     }
 

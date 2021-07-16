@@ -1,6 +1,6 @@
 package com.curtisnewbie.module.ioc.context;
 
-import java.beans.Introspector;
+import java.util.Map;
 
 /**
  * Registry of beans
@@ -39,4 +39,12 @@ public interface BeanRegistry {
      * @param clazz class of th bean
      */
     boolean containsBean(Class<?> clazz);
+
+    /**
+     * Get map of beans (bean name to bean instance) that implements/extends the given type
+     *
+     * @param parentType parent type
+     * @return map of beans (bean name to bean instance) that implements/extends the given type
+     */
+    Map<String, Object> getBeansOfType(Class<?> parentType);
 }

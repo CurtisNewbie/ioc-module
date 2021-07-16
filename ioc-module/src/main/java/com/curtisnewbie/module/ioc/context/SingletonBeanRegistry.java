@@ -3,6 +3,8 @@ package com.curtisnewbie.module.ioc.context;
 import com.curtisnewbie.module.ioc.config.LogMutable;
 import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
 
+import java.util.Map;
+
 /**
  * Registry of singleton beans
  * <p>
