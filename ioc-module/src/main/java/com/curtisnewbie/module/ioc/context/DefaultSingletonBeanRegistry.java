@@ -6,12 +6,10 @@ import com.curtisnewbie.module.ioc.exceptions.*;
 import com.curtisnewbie.module.ioc.util.ClassLoaderHolder;
 import com.curtisnewbie.module.ioc.util.LogUtil;
 
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static com.curtisnewbie.module.ioc.util.LogUtil.info;
 import static java.lang.String.format;
@@ -21,21 +19,10 @@ import static java.lang.String.format;
  *
  * @author yongjie.zhuang
  */
-public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
+public class DefaultSingletonBeanRegistry extends DefaultBeanAliasRegistry implements SingletonBeanRegistry {
 
     private static final Logger logger = LogUtil.getLogger(DefaultSingletonBeanRegistry.class);
     private final AtomicBoolean isLogMuted = new AtomicBoolean(false);
-
-    /**
-     * Set of beans' name (excluding aliases)
-     * <br>
-     * This set will only include those (the implementation beans) that are managed by this registry, their interfaces
-     * will not be included here.
-     *
-     * @see #beanAliasMap
-     * @see #beanTypeMap
-     */
-    private final Set<String> beanNameSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     /**
      * Bean type map; bean name to bean type (including interfaces and aliases' types if any)
@@ -71,12 +58,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      */
     private final Map<String, Set<String>> dependenciesMap = new ConcurrentHashMap<>();
 
-    /**
-     * Alias map; bean alias (e.g., interfaces) to a set of actual bean names
-     * <br>
-     */
-    private final Map<String, Set<String>> beanAliasMap = new ConcurrentHashMap<>();
-
     /** mutex lock */
     private final Object mutex = new Object();
 
@@ -106,12 +87,6 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
         this.beanNameGenerator = beanNameGenerator;
         this.beanInstantiationStrategy = beanInstantiationStrategy;
         this.beanAliasParser = beanAliasParser;
-    }
-
-    @Override
-    public String getBeanName(String beanNameOrAlias) {
-        String implBean = findNameOfPossibleBeanAlias(beanNameOrAlias);
-        return implBean;
     }
 
     @Override
@@ -165,7 +140,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
                 beanNameToObj.put(parentBeanName, parentDirectImpl);
 
             // try to find if any other beans that extend or implement this type
-            Set<String> childBeans = beanAliasMap.get(parentBeanName);
+            Set<String> childBeans = getBeanNames(parentBeanName);
             if (childBeans != null) {
                 for (String childName : childBeans) {
                     Object childObj = beanInstanceMap.get(childName);
@@ -232,7 +207,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     @Override
     public boolean containsBean(String name) {
         Objects.requireNonNull(name);
-        String implBeanName = findNameOfPossibleBeanAlias(name);
+        String implBeanName = getBeanName(name);
         if (implBeanName == null)
             return false;
         return beanInstanceMap.containsKey(implBeanName);
@@ -253,7 +228,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     @Override
     public Object getBeanByName(String beanName) {
         Objects.requireNonNull(beanName);
-        String implBeanName = findNameOfPossibleBeanAlias(beanName);
+        String implBeanName = getBeanName(beanName);
         if (implBeanName == null)
             return null;
         return beanInstanceMap.get(implBeanName);
@@ -333,8 +308,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
             are used for injection
              */
             for (String al : aliases) {
-                beanAliasMap.computeIfAbsent(al, k -> new HashSet<>());
-                beanAliasMap.get(al).add(beanName);
+                addAlias(beanName, al);
             }
         }
     }
@@ -352,7 +326,7 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
      * Instantiate the bean eagerly using pre-selected {@link BeanInstantiationStrategy}
      */
     private void instantiateUnresolvedBeanEagerly(String beanName) {
-        String implBeanName = findNameOfPossibleBeanAlias(beanName);
+        String implBeanName = getBeanName(beanName);
         Objects.requireNonNull(implBeanName,
                 format("Bean: '%s' not registered, cannot be instantiated", beanName));
         if (!beanInstanceMap.containsKey(implBeanName)) {
@@ -375,25 +349,25 @@ public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
     }
 
     /** Find actual implementation bean's name by a possible alias */
-    private String findNameOfPossibleBeanAlias(String beanAlias) {
-        Objects.requireNonNull(beanAlias);
-
-        // first check if this beanName is actually an alias
-        if (beanNameSet.contains(beanAlias)) {
-            return beanAlias;
-        }
-
-        // this bean name is an alias, see if it's pointing to some bean
-        Set<String> actualBeanNames = beanAliasMap.get(beanAlias);
-        if (actualBeanNames == null || actualBeanNames.isEmpty())
-            return null;
-        // multiple beans are found, must have circular dependencies
-        if (actualBeanNames.size() > 1)
-            throw new CircularDependencyException(format("Found two beans (%s) with the same alias (%s)",
-                    actualBeanNames.toString(), beanAlias));
-        // the actual bean name is found, return it's type
-        return actualBeanNames.iterator().next();
-    }
+//    private String findNameOfPossibleBeanAlias(String beanAlias) {
+//        Objects.requireNonNull(beanAlias);
+//
+//        // first check if this beanName is actually an alias
+//        if (beanNameSet.contains(beanAlias)) {
+//            return beanAlias;
+//        }
+//
+//        // this bean name is an alias, see if it's pointing to some bean
+//        Set<String> actualBeanNames = getBeanNames(beanAlias);
+//        if (actualBeanNames == null || actualBeanNames.isEmpty())
+//            return null;
+//        // multiple beans are found, must have circular dependencies
+//        if (actualBeanNames.size() > 1)
+//            throw new CircularDependencyException(format("Found two beans (%s) with the same alias (%s)",
+//                    actualBeanNames.toString(), beanAlias));
+//        // the actual bean name is found, return it's type
+//        return actualBeanNames.iterator().next();
+//    }
 
     /** Get object for mutex lock */
     private Object getMutex() {

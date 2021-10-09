@@ -13,16 +13,7 @@ import java.util.Map;
  *
  * @author yongjie.zhuang
  */
-public interface SingletonBeanRegistry extends BeanRegistry, LogMutable {
-
-    /**
-     * Get bean's name by the name that is possibly an alias
-     *
-     * @param beanNameOrAlias bean name or its alias
-     * @return bean's name
-     * @see #containsBean(String)
-     */
-    String getBeanName(String beanNameOrAlias);
+public interface SingletonBeanRegistry extends BeanRegistry, LogMutable, BeanAliasRegistry {
 
     /**
      * Register a singleton bean with the name
