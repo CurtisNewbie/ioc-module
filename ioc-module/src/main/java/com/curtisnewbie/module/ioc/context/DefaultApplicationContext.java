@@ -15,7 +15,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     /** Registry of singleton beans */
     private final SingletonBeanRegistry singletonBeanRegistry;
-    private List<BeanPostProcessor> beanPostProcessorList;
+    private List<BeanPostProcessor> beanPostProcessors;
     private final BeanDependencyParser beanDependencyParser;
     private final BeanNameGenerator beanNameGenerator;
     private final BeanClassScanner beanClassScanner;
@@ -56,7 +56,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
                 this.beanAliasParser
         );
         // create a list of bean post processors, note that this order matters
-        this.beanPostProcessorList = Arrays.asList(
+        this.beanPostProcessors = Arrays.asList(
                 new DependencyInjectionBeanPostProcessor(singletonBeanRegistry, beanDependencyParser),
                 new PropertyValueBeanPostProcessor(propertyRegistry),
                 new ApplicationContextAwareBeanPostProcessor(this),
@@ -64,10 +64,14 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         );
         // add more bean post processors if provided
         if (extraBeanPostProcessors != null)
-            this.beanPostProcessorList.addAll(extraBeanPostProcessors);
+            this.beanPostProcessors.addAll(extraBeanPostProcessors);
 
         // register bean post processors
-        for (BeanPostProcessor bpp : beanPostProcessorList)
+        registerBeanPostProcessors();
+    }
+
+    private void registerBeanPostProcessors() {
+        for (BeanPostProcessor bpp : beanPostProcessors)
             this.singletonBeanRegistry.registerBeanPostProcessor(bpp);
     }
 

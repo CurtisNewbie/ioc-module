@@ -10,7 +10,7 @@ import com.curtisnewbie.module.ioc.context.BeanRegistry;
  *
  * @author yongjie.zhuang
  */
-public class BeanRegistryAwareBeanPostProcessor implements BeanPostProcessor {
+public class BeanRegistryAwareBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
 
     private BeanRegistry beanRegistry;
 

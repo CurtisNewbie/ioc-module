@@ -21,7 +21,7 @@ import java.util.*;
  * @see com.curtisnewbie.module.ioc.context.LoadablePropertyRegistry
  * @see com.curtisnewbie.module.ioc.convert.Converters
  */
-public class PropertyValueBeanPostProcessor implements BeanPostProcessor {
+public class PropertyValueBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
 
     private final Class<PropertyValue> propertyValueAnnotation = PropertyValue.class;
     private final PropertyRegistry propertyRegistry;

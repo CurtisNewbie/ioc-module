@@ -263,8 +263,14 @@ public class DefaultSingletonBeanRegistry extends DefaultBeanDefinitionRegistry 
 
             // delegate actual dependency injection to the postProcessors for extensibility
             // and the post processing is applied after all managed beans' instantiation
-            applyPostProcessing();
+            postProcessBeansAfterInstantiation();
             logIfNotMuted("Beans post processing applied");
+        }
+    }
+
+    private void postProcessBeansAfterInstantiation() {
+        for (Map.Entry<String, Object> bean : beanInstanceMap.entrySet()) {
+            postProcessAfterInstantiation(bean.getKey(), bean.getValue());
         }
     }
 
@@ -278,7 +284,7 @@ public class DefaultSingletonBeanRegistry extends DefaultBeanDefinitionRegistry 
      * concrete implementation) by one of the interface that it implements.
      *
      * @see #loadBeanRegistry()
-     * @see #applyPostProcessing()
+     * @see #postProcessAfterInstantiation(String, Object)
      */
     private void registerManagedBeans(Set<Class<?>> managedBeanClasses) {
         for (Class<?> c : managedBeanClasses) {
@@ -328,44 +334,23 @@ public class DefaultSingletonBeanRegistry extends DefaultBeanDefinitionRegistry 
         if (!beanInstanceMap.containsKey(implBeanName)) {
             BeanDefinition beanDefinition = getBeanDefinition(implBeanName);
             Objects.requireNonNull(beanDefinition);
-            Object bean = beanInstantiationStrategy.instantiateBean(beanDefinition.getType());
+
+            final Object bean = beanInstantiationStrategy.instantiateBean(beanDefinition.getType());
             // register an eagerly created bean, wherein the dependencies are not resolved
             registerEagerlyCreatedSingletonBean(implBeanName, bean);
         }
     }
 
-    private void applyPostProcessing() {
+    private void postProcessAfterInstantiation(String beanName, Object bean) {
         for (BeanPostProcessor p : this.beanPostProcessors) {
-            for (Map.Entry<String, Object> bean : this.beanInstanceMap.entrySet()) {
-                Object processedObj = p.postProcessBeanAfterInstantiation(bean.getValue(), bean.getKey());
-                Objects.requireNonNull(processedObj, "BeanPostProcessor " + p.getClass().getSimpleName()
-                        + " should not return null object after processing");
-                this.beanInstanceMap.replace(bean.getKey(), processedObj);
+            if (p instanceof InstantiationAwareBeanPostProcessor) {
+                Object objToUse = ((InstantiationAwareBeanPostProcessor) p).postProcessBeanAfterInstantiation(bean, beanName);
+                if (objToUse != null)
+                    this.beanInstanceMap.replace(beanName, objToUse);
             }
-            logIfNotMuted("Applied BeanPostProcessor: '%s'", p.getClass().getName());
         }
+        logIfNotMuted("Applied InstantiationAwareBeanPostProcessor: '%s'", bean.getClass().getName());
     }
-
-    /** Find actual implementation bean's name by a possible alias */
-//    private String findNameOfPossibleBeanAlias(String beanAlias) {
-//        Objects.requireNonNull(beanAlias);
-//
-//        // first check if this beanName is actually an alias
-//        if (beanNameSet.contains(beanAlias)) {
-//            return beanAlias;
-//        }
-//
-//        // this bean name is an alias, see if it's pointing to some bean
-//        Set<String> actualBeanNames = getBeanNames(beanAlias);
-//        if (actualBeanNames == null || actualBeanNames.isEmpty())
-//            return null;
-//        // multiple beans are found, must have circular dependencies
-//        if (actualBeanNames.size() > 1)
-//            throw new CircularDependencyException(format("Found two beans (%s) with the same alias (%s)",
-//                    actualBeanNames.toString(), beanAlias));
-//        // the actual bean name is found, return it's type
-//        return actualBeanNames.iterator().next();
-//    }
 
     /** Get object for mutex lock */
     private Object getMutex() {

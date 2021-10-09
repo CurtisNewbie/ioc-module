@@ -18,7 +18,7 @@ import static java.lang.String.format;
  *
  * @author yongjie.zhuang
  */
-public class DependencyInjectionBeanPostProcessor implements BeanPostProcessor {
+public class DependencyInjectionBeanPostProcessor implements InstantiationAwareBeanPostProcessor{
 
     private SingletonBeanRegistry singletonBeanRegistry;
     private BeanDependencyParser beanDependencyParser;

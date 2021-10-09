@@ -8,7 +8,7 @@ import com.curtisnewbie.module.ioc.aware.ApplicationContextAware;
  *
  * @author yongjie.zhuang
  */
-public class ApplicationContextAwareBeanPostProcessor implements BeanPostProcessor {
+public class ApplicationContextAwareBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
 
     private ApplicationContext applicationContext;
 
