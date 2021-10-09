@@ -12,16 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultBeanAliasRegistry implements BeanAliasRegistry {
 
     /**
-     * Set of beans' name (excluding aliases)
-     * <br>
-     * This set will only include those (the implementation beans) that are managed by this registry, their interfaces
-     * will not be included here.
-     *
-     * @see #beanAliasMap
-     */
-    protected final Set<String> beanNameSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-    /**
      * Alias map; bean alias (e.g., interfaces) to a set of actual bean names
      * <br>
      */
@@ -54,20 +44,15 @@ public class DefaultBeanAliasRegistry implements BeanAliasRegistry {
     private Set<String> findNamesOfPossibleBeanAlias(String beanAlias) {
         Objects.requireNonNull(beanAlias);
 
-        // first check if this beanName is actually an alias
-        if (beanNameSet.contains(beanAlias)) {
-            // it's the beanName already, it's not alias
+        Set<String> actualBeanNames;
+
+        // no alias found, it's possible that it's not an alias at all, so we just return it
+        if (!beanAliasMap.containsKey(beanAlias) || (actualBeanNames = beanAliasMap.get(beanAlias)).isEmpty()) {
             return Collections.singleton(beanAlias);
         }
 
-        // this bean name is an alias, see if it's pointing to some bean
-        Set<String> actualBeanNames = beanAliasMap.get(beanAlias);
-        if (actualBeanNames == null || actualBeanNames.isEmpty())
-            return null;
-        // multiple beans are found, must have circular dependencies
-//        if (actualBeanNames.size() > 1)
-//            throw new CircularDependencyException(format("Found two beans (%s) with the same alias (%s)",
-//                    actualBeanNames.toString(), beanAlias));
+        if (actualBeanNames == null)
+            actualBeanNames = Collections.emptySet();
         return actualBeanNames;
     }
 }

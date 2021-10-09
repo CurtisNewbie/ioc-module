@@ -19,26 +19,20 @@ import static java.lang.String.format;
  *
  * @author yongjie.zhuang
  */
-public class DefaultSingletonBeanRegistry extends DefaultBeanAliasRegistry implements SingletonBeanRegistry {
+public class DefaultSingletonBeanRegistry extends DefaultBeanDefinitionRegistry implements SingletonBeanRegistry {
 
     private static final Logger logger = LogUtil.getLogger(DefaultSingletonBeanRegistry.class);
     private final AtomicBoolean isLogMuted = new AtomicBoolean(false);
 
     /**
-     * Bean type map; bean name to bean type (including interfaces and aliases' types if any)
+     * Set of beans' name (excluding aliases)
      * <br>
-     * This map is used to track the class of each bean name, if class A implements interface B and C, then this map
-     * will contains three pairs of name-class for this same singleton instance.
-     * <br>
-     * e.g.,
+     * This set will only include those (the implementation beans) that are managed by this registry, their interfaces
+     * will not be included here.
      *
-     * <ol>
-     *  <li>name for class A -> class A</li>
-     *  <li>name for class B -> class B</li>
-     *  <li>name for class C -> class C</li>
-     * </ol>
+     * @see #beanAliasMap
      */
-    private final Map<String, Class<?>> beanTypeMap = new ConcurrentHashMap<>();
+    protected final Set<String> beanNameSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
 
     /**
      * Beans map; bean name to bean instance
@@ -277,8 +271,8 @@ public class DefaultSingletonBeanRegistry extends DefaultBeanAliasRegistry imple
     /**
      * Register a set of beans' classes that are found by the scanner
      * <br>
-     * Registering, means loading these classes into the {@link #beanTypeMap}, {@link #beanNameSet}, {@link
-     * #beanAliasMap}, this method doesn't involve populating the beans and injectiong their dependencies.
+     * Registering, means loading these classes and their generated names in forms of {@link BeanDefinition}, this
+     * method doesn't involve populating the beans and injecting their dependencies.
      * <br>
      * This method also collect their interfaces, and use them as aliases, such that we can find a bean (of the actual
      * concrete implementation) by one of the interface that it implements.
@@ -295,8 +289,10 @@ public class DefaultSingletonBeanRegistry extends DefaultBeanAliasRegistry imple
                 );
             }
             String beanName = beanNameGenerator.generateBeanName(c);
-            beanTypeMap.put(beanName, c);
             beanNameSet.add(beanName);
+
+            // register bean definition
+            registerBeanDefinition(beanName, new DefaultBeanDefinition(c, beanName));
 
             // register the superClass and interfaces' name as this bean's alias
             Set<String> aliases = beanAliasParser.parseBeanAliases(c);
@@ -330,7 +326,9 @@ public class DefaultSingletonBeanRegistry extends DefaultBeanAliasRegistry imple
         Objects.requireNonNull(implBeanName,
                 format("Bean: '%s' not registered, cannot be instantiated", beanName));
         if (!beanInstanceMap.containsKey(implBeanName)) {
-            Object bean = beanInstantiationStrategy.instantiateBean(beanTypeMap.get(implBeanName));
+            BeanDefinition beanDefinition = getBeanDefinition(implBeanName);
+            Objects.requireNonNull(beanDefinition);
+            Object bean = beanInstantiationStrategy.instantiateBean(beanDefinition.getType());
             // register an eagerly created bean, wherein the dependencies are not resolved
             registerEagerlyCreatedSingletonBean(implBeanName, bean);
         }
