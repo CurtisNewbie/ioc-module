@@ -348,7 +348,7 @@ public class BeanRegistryTest {
     }
 
     @Test
-    public void shouldBeansOfType() {
+    public void shouldGetBeansOfType() {
         ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();
         setupMockScanner(contextInitializer,
                 AuthenticationManager.class,

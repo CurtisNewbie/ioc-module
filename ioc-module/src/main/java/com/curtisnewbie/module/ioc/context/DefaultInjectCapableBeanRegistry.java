@@ -2,10 +2,7 @@ package com.curtisnewbie.module.ioc.context;
 
 import com.curtisnewbie.module.ioc.annotations.MBean;
 import com.curtisnewbie.module.ioc.exceptions.TypeNotSupportedForInjectionException;
-import com.curtisnewbie.module.ioc.processing.BeanAliasParser;
-import com.curtisnewbie.module.ioc.processing.BeanClassScanner;
-import com.curtisnewbie.module.ioc.processing.BeanInstantiationStrategy;
-import com.curtisnewbie.module.ioc.processing.BeanNameGenerator;
+import com.curtisnewbie.module.ioc.processing.*;
 
 import java.util.Objects;
 import java.util.Set;
@@ -45,6 +42,16 @@ public class DefaultInjectCapableBeanRegistry extends AbstractBeanRegistry {
     }
 
     @Override
+    protected void prepareBeanRegistry() {
+        /*
+        register itself as resolved dependency that can be later than be injected into other beans,
+        but only the BeanRegistry interface can be used for dependency injection
+         */
+        this.registerSingletonBean(BeanRegistry.class, this);
+        this.registerSingletonBean(InjectCapableBeanRegistry.class, this);
+    }
+
+    @Override
     protected void loadBeanDefinitions() {
         // set of classes of beans that will be managed by this context
         Set<Class<?>> managedBeanClasses = beanClzScanner.scanBeanClasses();
@@ -62,7 +69,6 @@ public class DefaultInjectCapableBeanRegistry extends AbstractBeanRegistry {
      * <br>
      * This method also collect their interfaces, and use them as aliases, such that we can find a bean (of the actual
      * concrete implementation) by one of the interface that it implements.
-     *
      */
     private void registerBeanDefinitions(Set<Class<?>> managedBeanClasses) {
         for (Class<?> c : managedBeanClasses) {

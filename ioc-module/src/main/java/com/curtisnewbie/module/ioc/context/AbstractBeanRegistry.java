@@ -26,7 +26,7 @@ public abstract class AbstractBeanRegistry extends DefaultSingletonBeanRegistry
 
 
     /** Indicate whether this registry is initialized, registry can only be initialised for once */
-    private boolean isInitialised = false;
+    private final AtomicBoolean isInitialised = new AtomicBoolean(false);
 
     /**
      * Dependencies map; bean name to its dependencies
@@ -49,9 +49,8 @@ public abstract class AbstractBeanRegistry extends DefaultSingletonBeanRegistry
         synchronized (getMutex()) {
 
             // can only be initialised once
-            if (isInitialised)
+            if (!isInitialised.compareAndSet(false, true))
                 throw new ContextInitializedException("Bean registry cannot be initialized multiple times");
-            isInitialised = true;
 
             logIfNotMuted("Starts loading bean registry");
 
@@ -197,11 +196,6 @@ public abstract class AbstractBeanRegistry extends DefaultSingletonBeanRegistry
 
     /** Prepare the bean registry before starting any actual bean scanning, bean instantiation, and dependency injection */
     protected void prepareBeanRegistry() {
-        /*
-        register itself as resolved dependency that can be later than be injected into other beans,
-        but only the BeanRegistry interface can be used for dependency injection
-         */
-        this.registerSingletonBean(BeanRegistry.class, this);
     }
 
     @Override
