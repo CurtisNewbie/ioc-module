@@ -254,8 +254,6 @@ public class BeanRegistryTest {
         logger.info("Test passed");
     }
 
-    // todo check whether new implementation can be affected by circular dependencies
-    @Disabled
     @Test
     public void shouldDetectIndirectCircularDependencies() {
         ContextInitializer contextInitializer = ApplicationContextFactory.getNewContextInitializer();

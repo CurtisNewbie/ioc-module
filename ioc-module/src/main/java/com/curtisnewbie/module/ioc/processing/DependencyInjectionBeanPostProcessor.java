@@ -68,8 +68,7 @@ public class DependencyInjectionBeanPostProcessor implements InstantiationAwareB
         for (DependentBeanInfo dependent : dependentBeans) {
             String dependentAlias = dependent.getDependentBeanName();
 
-            // detect circular dependency
-            if (beanRegistry.isDependent(dependentAlias, beanName)) {
+            if (beanRegistry.isDependent(beanName, dependentAlias)) {
                 throw new CircularDependencyException("Detected circular dependency between " + beanName + " and " + dependentAlias);
             }
 
