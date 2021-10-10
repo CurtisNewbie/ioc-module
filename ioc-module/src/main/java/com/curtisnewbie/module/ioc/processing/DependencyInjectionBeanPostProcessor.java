@@ -2,7 +2,9 @@ package com.curtisnewbie.module.ioc.processing;
 
 import com.curtisnewbie.module.ioc.beans.BeanPropertyInfo;
 import com.curtisnewbie.module.ioc.beans.DependentBeanInfo;
+import com.curtisnewbie.module.ioc.context.InjectCapableBeanRegistry;
 import com.curtisnewbie.module.ioc.context.SingletonBeanRegistry;
+import com.curtisnewbie.module.ioc.exceptions.BeanNotFoundException;
 import com.curtisnewbie.module.ioc.exceptions.CircularDependencyException;
 import com.curtisnewbie.module.ioc.exceptions.UnsatisfiedDependencyException;
 
@@ -18,24 +20,23 @@ import static java.lang.String.format;
  *
  * @author yongjie.zhuang
  */
-public class DependencyInjectionBeanPostProcessor implements InstantiationAwareBeanPostProcessor{
+public class DependencyInjectionBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
 
-    private SingletonBeanRegistry singletonBeanRegistry;
+    private InjectCapableBeanRegistry beanRegistry;
     private BeanDependencyParser beanDependencyParser;
     private Set<String> beanResolved = new HashSet<>();
 
-    public DependencyInjectionBeanPostProcessor(SingletonBeanRegistry singletonBeanRegistry,
+    public DependencyInjectionBeanPostProcessor(InjectCapableBeanRegistry beanRegistry,
                                                 BeanDependencyParser beanDependencyParser) {
-        this.singletonBeanRegistry = singletonBeanRegistry;
+        this.beanRegistry = beanRegistry;
         this.beanDependencyParser = beanDependencyParser;
     }
 
     @Override
-    public Object postProcessBeanAfterInstantiation(Object bean, String beanName) {
+    public Object postProcessBeforeInitialization(String beanName, Object bean) {
         resolveDependenciesRecursively(bean, beanName);
         return bean;
     }
-
 
     /**
      * Resolve dependencies between beans (in beanNameSet) recursively
@@ -53,7 +54,7 @@ public class DependencyInjectionBeanPostProcessor implements InstantiationAwareB
         Objects.requireNonNull(beanName);
 
         // bean has been resolved
-        if (beanResolved.contains(singletonBeanRegistry.getBeanName(beanName)))
+        if (beanResolved.contains(beanRegistry.getBeanName(beanName)))
             return;
 
         Class<?> beanClz = bean.getClass();
@@ -67,21 +68,17 @@ public class DependencyInjectionBeanPostProcessor implements InstantiationAwareB
         for (DependentBeanInfo dependent : dependentBeans) {
             String dependentAlias = dependent.getDependentBeanName();
 
-            // detect unresolvable dependency
-            if (!singletonBeanRegistry.containsBean(dependentAlias)) {
-                throw new UnsatisfiedDependencyException("Detected unresolvable dependency: " + dependentAlias);
-            }
             // detect circular dependency
-            if (singletonBeanRegistry.isDependent(beanName, dependentAlias)) {
+            if (beanRegistry.isDependent(dependentAlias, beanName)) {
                 throw new CircularDependencyException("Detected circular dependency between " + beanName + " and " + dependentAlias);
             }
+
             // update dependency cache
-            singletonBeanRegistry.registerDependency(beanName, dependentAlias);
+            beanRegistry.registerDependency(beanName, dependentAlias);
 
             // try to get the instantiated dependent bean, see if it's actually populated
-            Object dependentBean = singletonBeanRegistry.getBeanByName(dependentAlias);
-            Objects.requireNonNull(dependentBean, format("Dependent Bean: '%s' has not yet been instantiated, unable to inject dependencies",
-                    dependentAlias));
+            Object dependentBean = beanRegistry.getBeanByName(dependentAlias);
+            Objects.requireNonNull(dependentBean, "Detected unresolvable dependency: " + dependentAlias);
 
             // continue to resolve the dependent bean
             resolveDependenciesRecursively(dependentBean, dependentAlias);
@@ -93,7 +90,7 @@ public class DependencyInjectionBeanPostProcessor implements InstantiationAwareB
         }
 
         // mark the bean as resolved
-        beanResolved.add(singletonBeanRegistry.getBeanName(beanName));
+        beanResolved.add(beanRegistry.getBeanName(beanName));
     }
 
 
@@ -120,7 +117,7 @@ public class DependencyInjectionBeanPostProcessor implements InstantiationAwareB
             return;
 
         // the actual implementation bean, the required type might be an interface, so we need to handle the casting
-        Object dependentImplBeanInstance = singletonBeanRegistry.getBeanByName(dependentBeanName);
+        Object dependentImplBeanInstance = beanRegistry.getBeanByName(dependentBeanName);
         Objects.requireNonNull(dependentImplBeanInstance, "Unable to find instance of bean: " + dependentBeanName);
 
         for (BeanPropertyInfo prop : toBeInjectedProperties) {

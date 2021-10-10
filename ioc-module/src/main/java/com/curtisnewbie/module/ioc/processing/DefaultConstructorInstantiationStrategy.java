@@ -1,5 +1,6 @@
 package com.curtisnewbie.module.ioc.processing;
 
+import com.curtisnewbie.module.ioc.context.BeanDefinition;
 import com.curtisnewbie.module.ioc.exceptions.BeanCreationException;
 
 import java.lang.reflect.Constructor;
@@ -15,7 +16,9 @@ import java.util.Objects;
 public class DefaultConstructorInstantiationStrategy implements BeanInstantiationStrategy {
 
     @Override
-    public Object instantiateBean(Class<?> beanClazz) {
+    public Object instantiateBean(BeanDefinition beanDefinition) {
+        Objects.requireNonNull(beanDefinition);
+        Class<?> beanClazz = beanDefinition.getType();
         Objects.requireNonNull(beanClazz);
         // create bean with default constructor
         try {

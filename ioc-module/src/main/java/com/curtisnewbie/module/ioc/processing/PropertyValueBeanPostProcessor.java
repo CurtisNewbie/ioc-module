@@ -31,7 +31,7 @@ public class PropertyValueBeanPostProcessor implements InstantiationAwareBeanPos
     }
 
     @Override
-    public Object postProcessBeanAfterInstantiation(Object bean, String beanName) {
+    public Object postProcessBeforeInitialization(String beanName, Object bean) {
         Objects.requireNonNull(bean, "Unable to post process null bean");
         Class<?> beanClz = bean.getClass();
         Map<String, PropertyDescriptor> pdMap = BeansUtil.introspectPropertyDescriptorMap(beanClz);
@@ -91,6 +91,7 @@ public class PropertyValueBeanPostProcessor implements InstantiationAwareBeanPos
             }
         }
         return bean;
+
     }
 
     private boolean hasSupportedAnnotation(Annotation[] annotations) {

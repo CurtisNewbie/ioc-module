@@ -1,5 +1,7 @@
 package com.curtisnewbie.module.ioc.processing;
 
+import com.curtisnewbie.module.ioc.context.BeanDefinition;
+
 /**
  * Strategy to instantiate beans (not including dependency injection)
  *
@@ -8,8 +10,8 @@ package com.curtisnewbie.module.ioc.processing;
 public interface BeanInstantiationStrategy {
 
     /**
-     * Instantiate bean by the given bean class
+     * Instantiate bean
      */
-    Object instantiateBean(Class<?> beanClazz);
+    Object instantiateBean(BeanDefinition beanDefinition);
 
 }

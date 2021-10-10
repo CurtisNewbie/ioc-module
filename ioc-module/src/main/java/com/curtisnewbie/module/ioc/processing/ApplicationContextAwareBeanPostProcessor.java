@@ -2,6 +2,7 @@ package com.curtisnewbie.module.ioc.processing;
 
 import com.curtisnewbie.module.ioc.context.ApplicationContext;
 import com.curtisnewbie.module.ioc.aware.ApplicationContextAware;
+import com.curtisnewbie.module.ioc.context.BeanDefinition;
 
 /**
  * BeanPostProcessor for {@link ApplicationContextAware}
@@ -17,7 +18,7 @@ public class ApplicationContextAwareBeanPostProcessor implements InstantiationAw
     }
 
     @Override
-    public Object postProcessBeanAfterInstantiation(Object bean, String beanName) {
+    public Object postProcessBeforeInitialization(String beanName, Object bean) {
         if (bean instanceof ApplicationContextAware) {
             ((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);
         }

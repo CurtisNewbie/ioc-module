@@ -1,5 +1,7 @@
 package com.curtisnewbie.module.ioc.context;
 
+import com.curtisnewbie.module.ioc.processing.BeanPostProcessor;
+
 import java.util.Map;
 
 /**

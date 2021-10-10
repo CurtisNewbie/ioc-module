@@ -31,6 +31,6 @@ public interface BeanDefinitionRegistry {
      * @param beanName bean's name
      * @return true if found else false
      */
-    boolean contains(String beanName);
+    boolean containsBeanDefinition(String beanName);
 
 }

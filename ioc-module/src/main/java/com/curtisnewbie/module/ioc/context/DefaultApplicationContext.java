@@ -13,8 +13,8 @@ import java.util.Objects;
  */
 public class DefaultApplicationContext extends AbstractApplicationContext {
 
-    /** Registry of singleton beans */
-    private final SingletonBeanRegistry singletonBeanRegistry;
+    /** bean registry */
+    private final DefaultInjectCapableBeanRegistry beanRegistry;
     private List<BeanPostProcessor> beanPostProcessors;
     private final BeanDependencyParser beanDependencyParser;
     private final BeanNameGenerator beanNameGenerator;
@@ -49,7 +49,7 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
             ((RefreshableRegistry) propertyRegistry).refresh();
 
         // create bean registry
-        this.singletonBeanRegistry = new DefaultSingletonBeanRegistry(
+        this.beanRegistry = new DefaultInjectCapableBeanRegistry(
                 this.beanClassScanner,
                 this.beanNameGenerator,
                 this.beanInstantiationStrategy,
@@ -57,10 +57,10 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
         );
         // create a list of bean post processors, note that this order matters
         this.beanPostProcessors = Arrays.asList(
-                new DependencyInjectionBeanPostProcessor(singletonBeanRegistry, beanDependencyParser),
+                new DependencyInjectionBeanPostProcessor(beanRegistry, beanDependencyParser),
                 new PropertyValueBeanPostProcessor(propertyRegistry),
                 new ApplicationContextAwareBeanPostProcessor(this),
-                new BeanRegistryAwareBeanPostProcessor(this.singletonBeanRegistry)
+                new BeanRegistryAwareBeanPostProcessor(this.beanRegistry)
         );
         // add more bean post processors if provided
         if (extraBeanPostProcessors != null)
@@ -72,23 +72,23 @@ public class DefaultApplicationContext extends AbstractApplicationContext {
 
     private void registerBeanPostProcessors() {
         for (BeanPostProcessor bpp : beanPostProcessors)
-            this.singletonBeanRegistry.registerBeanPostProcessor(bpp);
+            this.beanRegistry.registerBeanPostProcessor(bpp);
     }
 
     @Override
     protected void initializeContext() {
         // mute the beanRegistry if necessary
-        if (this.singletonBeanRegistry.canMuteLog() && isLogMuted())
-            this.singletonBeanRegistry.muteLog();
+        if (this.beanRegistry.canMuteLog() && isLogMuted())
+            this.beanRegistry.muteLog();
         // register singleton beans that have been created, e.g., this ApplicationContext
-        this.singletonBeanRegistry.registerSingletonBean(ApplicationContext.class, this);
+        this.beanRegistry.registerSingletonBean(ApplicationContext.class, this);
         // starts bean scanning, instantiation, and dependency injection
-        this.singletonBeanRegistry.loadBeanRegistry();
+        this.beanRegistry.refresh();
     }
 
     @Override
     public BeanRegistry getBeanRegistry() {
-        return singletonBeanRegistry;
+        return beanRegistry;
     }
 
     @Override

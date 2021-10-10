@@ -26,7 +26,7 @@ public class DefaultBeanDefinitionRegistry extends DefaultBeanAliasRegistry impl
     }
 
     @Override
-    public boolean contains(String beanName) {
+    public boolean containsBeanDefinition(String beanName) {
         return beanDefinitionMap.containsKey(beanName);
     }
 }

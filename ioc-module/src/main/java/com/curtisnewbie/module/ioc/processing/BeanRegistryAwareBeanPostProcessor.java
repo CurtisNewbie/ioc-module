@@ -19,7 +19,7 @@ public class BeanRegistryAwareBeanPostProcessor implements InstantiationAwareBea
     }
 
     @Override
-    public Object postProcessBeanAfterInstantiation(Object bean, String beanName) {
+    public Object postProcessBeforeInitialization(String beanName, Object bean) {
         if (bean instanceof BeanRegistryAware) {
             ((BeanRegistryAware) bean).setBeanRegistry(beanRegistry);
         }
