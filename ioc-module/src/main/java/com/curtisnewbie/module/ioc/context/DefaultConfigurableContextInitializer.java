@@ -35,7 +35,7 @@ public class DefaultConfigurableContextInitializer implements ConfigurableContex
         if (this.beanAliasParser == null)
             this.beanAliasParser = new ParentClassBeanAliasParser(beanNameGenerator);
         if (this.propertyRegistry == null)
-            this.propertyRegistry = new ClassPathPropertyRegistry();
+            this.propertyRegistry = new ClassPathRefreshablePropertyRegistry();
 
         DefaultApplicationContext ctx = new DefaultApplicationContext(
                 this.beanDependencyParser,

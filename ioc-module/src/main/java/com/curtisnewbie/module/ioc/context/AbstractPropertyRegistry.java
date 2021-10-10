@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author yongjie.zhuang
  * @see com.curtisnewbie.module.ioc.processing.PropertyValueBeanPostProcessor
- * @see com.curtisnewbie.module.ioc.convert.StringToVConverter
  * @see com.curtisnewbie.module.ioc.convert.Converters
  */
 public abstract class AbstractPropertyRegistry implements PropertyRegistry {

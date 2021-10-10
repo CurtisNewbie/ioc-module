@@ -18,7 +18,6 @@ import java.util.*;
  *
  * @author yongjie.zhuang
  * @see PropertyRegistry
- * @see com.curtisnewbie.module.ioc.context.LoadablePropertyRegistry
  * @see com.curtisnewbie.module.ioc.convert.Converters
  */
 public class PropertyValueBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
