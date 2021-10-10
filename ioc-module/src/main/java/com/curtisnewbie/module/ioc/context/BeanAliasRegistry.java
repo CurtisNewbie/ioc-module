@@ -9,6 +9,10 @@ public interface BeanAliasRegistry {
 
     /**
      * Get bean's name by the name that is possibly an alias
+     * <p>
+     * If the {@code BeanAliasRegistry} doesn't know the given name, it will just return the name given, since we are
+     * not sure whether the given name is actually an alias
+     * </p>
      *
      * @param beanNameOrAlias bean name or its alias
      * @return bean's name
@@ -16,7 +20,11 @@ public interface BeanAliasRegistry {
     String getBeanName(String beanNameOrAlias);
 
     /**
-     * Get one or more bean's name by the alias
+     * Get one or more bean's name by the alias, it's possible that multiple bean shares the same alias
+     * <p>
+     * If the {@code BeanAliasRegistry} doesn't know the given name, it will just return the name given, since we are
+     * not sure whether the given name is actually an alias
+     * </p>
      *
      * @param beanNameOrAlias bean name or its alias
      * @return one or more beans' name

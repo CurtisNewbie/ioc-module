@@ -256,7 +256,7 @@ public class DefaultSingletonBeanRegistry extends DefaultBeanDefinitionRegistry 
             logIfNotMuted("Beans registered");
 
             // instantiate all the beans first (without any references of dependencies being injected)
-            for (String beanName : beanNameSet) {
+            for (String beanName : beanDefinitionMap.keySet()) {
                 instantiateUnresolvedBeanEagerly(beanName);
             }
             logIfNotMuted("Beans instantiated eagerly");

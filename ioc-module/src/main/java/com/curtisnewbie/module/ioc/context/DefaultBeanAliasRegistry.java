@@ -12,8 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultBeanAliasRegistry implements BeanAliasRegistry {
 
     /**
-     * Alias map; bean alias (e.g., interfaces) to a set of actual bean names
-     * <br>
+     * Alias map, bean alias -> actual bean names
      */
     protected final Map<String, Set<String>> beanAliasMap = new ConcurrentHashMap<>();
 
@@ -41,6 +40,19 @@ public class DefaultBeanAliasRegistry implements BeanAliasRegistry {
         beanAliasMap.get(alias).add(beanName);
     }
 
+    /**
+     * Try to resolve the true bean name of the given name
+     * <p>
+     * If the {@code beanAliasMap} doesn't contain any values for this name, the name may not be an alias, we just
+     * return it
+     * </p>
+     * <p>
+     * Else, we return any bean names that this alias point to, the returned {@code Set} is never null
+     * </p>
+     *
+     * @param beanAlias alias or beanName
+     * @return Set containing the beanName that this alias is associated with
+     */
     private Set<String> findNamesOfPossibleBeanAlias(String beanAlias) {
         Objects.requireNonNull(beanAlias);
 
@@ -50,9 +62,7 @@ public class DefaultBeanAliasRegistry implements BeanAliasRegistry {
         if (!beanAliasMap.containsKey(beanAlias) || (actualBeanNames = beanAliasMap.get(beanAlias)).isEmpty()) {
             return Collections.singleton(beanAlias);
         }
-
-        if (actualBeanNames == null)
-            actualBeanNames = Collections.emptySet();
+        // actualBeanNames will not be null, since we checked whether the map contains the given key
         return actualBeanNames;
     }
 }
